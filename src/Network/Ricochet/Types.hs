@@ -5,6 +5,7 @@ import           Control.Lens
 import           Data.ByteString        (ByteString ())
 import           Data.Word              (Word16)
 import           Network.Socket         (Socket ())
+import           System.IO              (Handle ())
 
 -- | Low level representation of a ricochet packet
 data Packet = MkPacket
@@ -19,13 +20,14 @@ data Packet = MkPacket
 --  - wether our ricochet instance is the client
 -- Equality is defined by equality of the socket
 data Connection = MkConnection
-  { _cSocket   :: Socket
-  , _cChannels :: [Channel]
-  , _cIsClient :: Bool
+  { _cHandle      :: Handle
+  , _cChannels    :: [Channel]
+  , _cIsClient    :: Bool
+  , _cInputBuffer :: ByteString
   }
 
 instance Eq Connection where
-  a == b = _cSocket a == _cSocket b
+  a == b = _cHandle a == _cHandle b
 
 -- | Low level representation of a ricochet channel
 data Channel = MkChannel

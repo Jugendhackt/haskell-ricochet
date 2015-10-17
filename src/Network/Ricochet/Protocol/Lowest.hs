@@ -12,23 +12,16 @@ import           Data.Monoid            ((<>))
 import           Data.Word              (Word8, Word16)
 import           Network.Ricochet.Types (Packet (..))
 
-data Sometimes a b = NotYet (a -> Sometimes a b)
-                   | ThereYouGo b
-
-instance Show b => Show (Sometimes a b) where
-  show (NotYet _) = "NotYet"
-  show (ThereYouGo b) = "ThereYouGo" <> show b
-
 -- | Parses the low-level representation of a Packet.
-parsePacket :: ByteString -> (Sometimes ByteString (Packet, ByteString))
+parsePacket :: ByteString -> Maybe (Packet, ByteString)
 parsePacket bs = case parseWord16 bs of
     Just (size, bs') -> case parseWord16 bs' of
       Just (channelId, bs'') -> case (toInteger . B.length $ bs'') `compare` toInteger size of
-        EQ -> ThereYouGo . (,B.empty) $ MkPacket size channelId bs''
-        GT -> ThereYouGo $ (MkPacket size channelId $ B.take (fromIntegral size) bs'', B.drop (fromIntegral size) bs'')
-        LT -> NotYet $ parsePacket . (<> bs'')
-      Nothing -> NotYet $ parsePacket . (<> bs')
-    Nothing -> NotYet $ parsePacket . (<> bs)
+        EQ -> Just . (,B.empty) $ MkPacket size channelId bs''
+        GT -> Just $ (MkPacket size channelId $ B.take (fromIntegral size) bs'', B.drop (fromIntegral size) bs'')
+        LT -> Nothing
+      Nothing -> Nothing
+    Nothing -> Nothing
 
 -- | Serializes a Packet to yield it’s low-level representation
 dumpPacket :: Packet -> ByteString
