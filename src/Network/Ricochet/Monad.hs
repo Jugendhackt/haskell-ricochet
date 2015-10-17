@@ -6,7 +6,7 @@ module Network.Ricochet.Monad
   , RicochetState (..)
   , serverSocket, connections
   , peekPacket, nextPacket
-  , socksPort
+  , socksPort, versions
   ) where
 
 import           Network.Ricochet.Protocol.Lowest
@@ -19,8 +19,9 @@ import           Control.Monad.IO.Class           (MonadIO (..))
 import           Control.Monad.State              (MonadState (..), StateT (..))
 import           Data.ByteString                  (ByteString ())
 import qualified Data.ByteString                  as B
+import           Data.Map                         (Map (), lookup, empty)
 import           Data.Monoid                      ((<>))
-import           Data.Word                        (Word16)
+import           Data.Word                        (Word8, Word16)
 import           Network                          (PortID (..))
 import           Network.Socket                   (Socket ())
 import           System.IO                        (BufferMode (..), Handle (),
@@ -37,6 +38,7 @@ data RicochetState = MkRicochetState
   , _connections  :: [Connection]
   , _contactList  :: [Contact]
   , _socksPort    :: PortID
+  , _versions     :: Map Word8 (Connection -> Ricochet ())
   }
 
 makeLenses ''RicochetState

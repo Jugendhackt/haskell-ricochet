@@ -4,6 +4,7 @@ module Network.Ricochet.Version
   ( Versions ()
   , Version ()
   , ConnectionHandler ()
+  , parseIntroduction
   ) where
 
 import           Prelude                    hiding (lookup)
@@ -31,6 +32,13 @@ type ConnectionHandler = Connection -> Ricochet ()
 type Versions = Map Version ConnectionHandler
 
 -- | Parses Introduction and Version Negotiation of the protocol
+parseIntroduction :: Versions -> ByteString -> Maybe ([ConnectionHandler], ByteString)
+parseIntroduction vers bs = maybeResult' . parse (introductionParser vers) $ bs
+
+maybeResult' :: Result r -> Maybe (r, ByteString)
+maybeResult' (Done i r) = Just (r, i)
+maybeResult' _          = Nothing
+
 introductionParser :: Map Version ConnectionHandler -> Parser [ConnectionHandler]
 introductionParser supportedVersions = do
   string "IM"
