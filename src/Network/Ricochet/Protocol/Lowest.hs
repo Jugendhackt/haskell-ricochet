@@ -1,16 +1,21 @@
 {-# LANGUAGE TupleSections #-}
 module Network.Ricochet.Protocol.Lowest
-  (parsePacket, dumpPacket, parseWord16, splitInPackets) where
+  ( parsePacket
+  , dumpPacket
+  , parseWord16
+  , splitInPackets
+  ) where
 
-import           Data.Bifunctor         (first)
-import           Data.Bits              (shiftL)
-import qualified Data.ByteString        as B
-import           Data.ByteString        (ByteString())
-import           Data.ByteString.Builder(word16BE, byteString, toLazyByteString)
-import           Data.ByteString.Lazy   (toStrict)
-import           Data.Monoid            ((<>))
-import           Data.Word              (Word8, Word16)
-import           Network.Ricochet.Types (Packet (..))
+import           Data.Bifunctor          (first)
+import           Data.Bits               (shiftL)
+import           Data.ByteString         (ByteString ())
+import qualified Data.ByteString         as B
+import           Data.ByteString.Builder (byteString, toLazyByteString,
+                                          word16BE)
+import           Data.ByteString.Lazy    (toStrict)
+import           Data.Monoid             ((<>))
+import           Data.Word               (Word16, Word8)
+import           Network.Ricochet.Types  (Packet (..))
 
 -- | Parses the low-level representation of a Packet.
 parsePacket :: ByteString -> Maybe (Packet, ByteString)

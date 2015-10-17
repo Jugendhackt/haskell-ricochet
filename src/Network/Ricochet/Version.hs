@@ -1,7 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Network.Ricochet.Version
-  (Versions()) where
+  ( Versions ()
+  , Version ()
+  , ConnectionHandler ()
+  , parseIntroduction
+  ) where
 
 import           Prelude                    hiding (lookup)
 
@@ -27,8 +31,8 @@ type ConnectionHandler = Connection -> Ricochet ()
 type Versions = Map Version ConnectionHandler
 
 -- | Parses Introduction and Version Negotiation of the protocol
-parseVersions :: Map Version ConnectionHandler -> Parser (Maybe [ConnectionHandler])
-parseVersions supportedVersions = failingParser <|> return Nothing
+parseIntroduction :: Map Version ConnectionHandler -> Parser (Maybe [ConnectionHandler])
+parseIntroduction supportedVersions = failingParser <|> return Nothing
   where failingParser = do
           string "IM"
           nVersions <- anyWord8

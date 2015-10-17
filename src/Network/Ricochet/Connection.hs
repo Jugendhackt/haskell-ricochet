@@ -1,17 +1,20 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Network.Ricochet.Connection
-  (createState, awaitConnection, connectTo) where
+  ( createState
+  , awaitConnection
+  , connectTo
+  ) where
 
-import Network.Ricochet.Monad
-import Network.Ricochet.Types
+import           Network.Ricochet.Monad
+import           Network.Ricochet.Types
 
-import Data.Monoid ((<>))
-import Control.Lens
+import           Control.Lens
 import           Control.Monad.IO.Class (liftIO)
-import qualified Data.ByteString as B
-import Network        (PortID(..), listenOn, accept)
-import Network.Socks5 (socksConnectTo)
+import qualified Data.ByteString        as B
+import           Data.Monoid            ((<>))
+import           Network                (PortID (..), accept, listenOn)
+import           Network.Socks5         (socksConnectTo)
 
 createState :: PortID -> IO RicochetState
 createState port = do

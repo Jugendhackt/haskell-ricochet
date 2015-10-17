@@ -2,10 +2,10 @@
 module Network.Ricochet.Types where
 
 import           Control.Lens
-import           Data.ByteString        (ByteString ())
-import           Data.Word              (Word16)
-import           Network.Socket         (Socket ())
-import           System.IO              (Handle ())
+import           Data.ByteString (ByteString ())
+import           Data.Word       (Word16)
+import           Network.Socket  (Socket ())
+import           System.IO       (Handle ())
 
 -- | Low level representation of a ricochet packet
 data Packet = MkPacket
