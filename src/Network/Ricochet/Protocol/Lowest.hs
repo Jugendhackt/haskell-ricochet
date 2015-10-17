@@ -1,6 +1,6 @@
 {-# LANGUAGE TupleSections #-}
 module Network.Ricochet.Protocol.Lowest
-  (parsePacket, dumpPacket, parseWord16) where
+  (parsePacket, dumpPacket, parseWord16, splitInPackets) where
 
 import           Data.Bifunctor         (first)
 import           Data.Bits              (shiftL)
@@ -25,15 +25,26 @@ parsePacket bs = case parseWord16 bs of
     Just (size, bs') -> case parseWord16 bs' of
       Just (channelId, bs'') -> case (toInteger . B.length $ bs'') `compare` toInteger size of
         EQ -> ThereYouGo . (,B.empty) $ MkPacket size channelId bs''
-        GT -> ThereYouGo $ (MkPacket size channelId $ B.take (conv size) bs'', B.drop (conv size) bs'')
+        GT -> ThereYouGo $ (MkPacket size channelId $ B.take (fromIntegral size) bs'', B.drop (fromIntegral size) bs'')
         LT -> NotYet $ parsePacket . (<> bs'')
       Nothing -> NotYet $ parsePacket . (<> bs')
     Nothing -> NotYet $ parsePacket . (<> bs)
-  where conv = fromInteger . toInteger
 
 -- | Serializes a Packet to yield it’s low-level representation
 dumpPacket :: Packet -> B.ByteString
 dumpPacket (MkPacket w1 w2 bs) = toStrict . toLazyByteString $ word16BE w1 <> word16BE w2 <> byteString bs
+
+splitInPackets :: Word16 -> B.ByteString -> [Packet]
+splitInPackets chan bs = let (ps, bs') = splitInPackets' chan ([], bs)
+                         in ps <> [MkPacket (fromIntegral . B.length $ bs') chan bs']
+
+splitInPackets' :: Word16 -> ([Packet], B.ByteString) -> ([Packet], B.ByteString)
+splitInPackets' chan (ps, bs) =
+    case (toInteger . B.length $ bs) `compare` toInteger packLen of
+      EQ -> (ps <> [MkPacket maxBound chan bs], B.empty)
+      LT -> (ps, bs)
+      GT -> splitInPackets' chan (ps <> [MkPacket maxBound chan (B.take packLen bs)], B.drop packLen bs)
+  where packLen = fromIntegral 10 --(maxBound :: Word16)
 
 -- | Parses two Word8s from a ByteString into one Word16
 parseWord16 :: B.ByteString -> Maybe (Word16, B.ByteString)
