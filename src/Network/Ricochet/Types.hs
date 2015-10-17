@@ -1,4 +1,5 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TemplateHaskell            #-}
 module Network.Ricochet.Types
   (Ricochet(..)) where
 
@@ -6,6 +7,7 @@ import           Control.Applicative    (Applicative (..))
 import           Control.Lens
 import           Control.Monad.IO.Class (MonadIO (..))
 import           Control.Monad.State    (MonadState (..), StateT (..))
+import           Data.ByteString        (ByteString ())
 import           Network.Socket         (Socket ())
 
 
@@ -20,7 +22,7 @@ data Packet = MkPacket
 
 data RicochetState = MkRicochetState
   { _serverSocket :: Socket
-  , _connections :: [Connection]
+  , _connections  :: [Connection]
   }
 
 data Connection = MkConnection
