@@ -1,7 +1,11 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TemplateHaskell            #-}
 module Network.Ricochet.Types
-  (Ricochet(..)) where
+  ( Ricochet(..)
+  , Packet(..)
+  , RicochetState(..)
+  , Connection(..)
+  , size, channelID, packetData, socket, serverSocket, connections) where
 
 import           Control.Applicative    (Applicative (..))
 import           Control.Lens
