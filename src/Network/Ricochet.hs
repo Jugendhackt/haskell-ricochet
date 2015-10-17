@@ -1,4 +1,2 @@
 module Network.Ricochet
 	() where
-
-

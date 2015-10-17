@@ -1,0 +1,55 @@
+Hints for Contributors
+======================
+sternenseemann
+:showtitle:
+:author: sternenseemann
+
+== Git Workflow
+
+=== Pulling & Pushing
+
+__Always__ use `git pull --rebase origin <branch>`! Always! If you have uncommited local changes `git stash` them. This will prevent ugly merge-commits in our `git log` and the need to interactively rebase from time to time.
+
+=== Committing
+
+* Think before you commit! Do not commit incomplete changes. Check wether you are commiting on the right branch.
+* Run `cabal configure && cabal build` before you commit! Add new dependencies to `ricochet-haskell.cabal`. Fix compilation errors.
+* Split your changes into meaningful commits! If you have got unrelated changes in a file, use `git add -p <file>` to split these into separate commits.
+* Write meaningful, grammatically correct commit messages! Use the additional lines to write down all important aspects of the commit.
+
+Tip: If you have commited on the wrong branch, but not pushed yet you can do this:
+
+[source,shell]
+----
+git reset --soft HEAD~1
+git checkout <right branch>
+git add <files>
+git commit
+----
+
+See also: http://chris.beams.io/posts/git-commit/[Git commit]
+
+=== Branching
+
+Create a new branch for every new feature or bigger change you develop!
+
+Smaller changes can be made on the master branch if you are sure that they won't conflict with anyone's changes.
+
+We don't have notion of stability yet but code on the master branch should compile at least.
+
+== Code
+
+* Use meaningful function names.
+* Use meaningful type names.
+* Write as much functional code as possible
+* Use two spaces as indentation.
+* …
+
+== Communication
+
+Please talk to the people! If everything is coordinated well, development will be much easier.
+
+These are the two communication channels we use:
+
+* Github issues for in depth discussion of concrete problems
+* IRC (`#jugendhackt` on freenode) for pretty much everything else (ranging from technical to more general to off-topic discussion)
