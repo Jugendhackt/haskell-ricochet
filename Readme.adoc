@@ -1,10 +1,10 @@
 ricochet (in Haskell)
-==========
+=====================
 shak-mar, brotknust, Bez, sternenseemann, hackalive, Hanfi10
 :toc:
 :showtitle:
 
-„Die Library zu [ricochet](http://ricochet.im). Cryptographie nutzbar auch für N3RDS.”
+„The Haskell-library for http://ricochet.im[ricochet].”
 
 == Idea
 
@@ -14,8 +14,8 @@ The issue we had was it not being built up modularily and enforcing a GUI, rende
 
 === Get in touch
 
- -> with the original ricoche-developers: john.brooks@dereferenced.net / ricochet:rs7ce36jsj24ogfw
- -> with the Jugend-Hackt-Team: #Jugendhackt on Freenode
+* with the original ricoche-developers: john.brooks@dereferenced.net / ricochet:rs7ce36jsj24ogfw
+* with the Jugend-Hackt-Team: #Jugendhackt on Freenode
 
 
 
