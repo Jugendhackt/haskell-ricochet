@@ -5,6 +5,7 @@ module Network.Ricochet.Version
   , Version ()
   , ConnectionHandler ()
   , parseIntroduction
+  , dumpIntroduction
   ) where
 
 import           Prelude                    hiding (lookup)
@@ -16,7 +17,7 @@ import           Control.Applicative        ((<|>))
 import           Data.Attoparsec.ByteString
 import           Data.ByteString            (ByteString ())
 import qualified Data.ByteString            as B
-import           Data.Map                   (Map (), lookup)
+import           Data.Map                   (Map (), keys, lookup, size)
 import           Data.Maybe                 (fromJust)
 import           Data.Monoid                ((<>))
 import           GHC.Word                   (Word8 ())
@@ -45,3 +46,7 @@ introductionParser supportedVersions = do
   nVersions <- anyWord8
   fmap (fromJust . (flip lookup $ supportedVersions)) <$>
     count (fromIntegral nVersions) anyWord8
+
+dumpIntroduction :: Versions -> ByteString
+dumpIntroduction supportedVersions = "IM" <> B.singleton (fromIntegral . size $ supportedVersions :: Word8) <>
+  foldl (\s c -> s <> B.singleton c) "" (keys supportedVersions)
