@@ -8,6 +8,7 @@ import           Control.Lens
 import           Control.Monad.IO.Class (MonadIO (..))
 import           Control.Monad.State    (MonadState (..), StateT (..))
 import           Data.ByteString        (ByteString ())
+import           Data.Word              (Word16)
 import           Network.Socket         (Socket ())
 
 
@@ -16,8 +17,8 @@ newtype Ricochet a = Ricochet { runRicochet :: StateT RicochetState IO a }
            , MonadIO, MonadState RicochetState)
 
 data Packet = MkPacket
-  { _size       :: Int
-  , _channelID  :: Int
+  { _size       :: Word16
+  , _channelID  :: Word16
   , _packetData :: ByteString
   }
 
