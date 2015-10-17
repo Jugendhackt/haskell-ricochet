@@ -4,15 +4,46 @@ shak-mar, brotknust, Bez, sternenseemann, hackalive, Hanfi10
 :toc:
 :showtitle:
 
-„The Haskell-library for http://ricochet.im[ricochet].”
+“A Haskell-library for http://ricochet.im[ricochet.im].”
 
 == Idea
 
-There is this messenger ricochet with this fancy idea of being absolutely OTR as well as plausible deniability, meaning there won't be proof of you ever having had any conversation at all.
+Ricochet has a number of very nice features:
 
-The issue we had was it not being built up modularily and enforcing a GUI, rendering it useless for people of other beliefs (not using a mouse at all), or those who want to change this.
+* Completely off-the-record messaging
+* Plausible deniability
+* Good encryption thanks to TOR
 
-=== Get in touch
+The original developers decided to build a monolithic architecture of the implementation and a Qt GUI - for good reasons. Now there are some reasons why we want to have a library:
 
-* with the original ricochet-developers: john.brooks@dereferenced.net / ricochet:rs7ce36jsj24ogfw
-* with the Jugend-Hackt-Team: #Jugendhackt on Freenode
+* Different frontends – like ncurses
+* Possibility to build bots
+* Easier to extend the protocol using new channel types (adding these is meant to be easy using our library)
+
+It is written in Haskell because Haskell is our favourite language – for good reasons.
+
+== Stability and Security
+
+_THIS IS NOT EVEN ALPHA SOFTWARE. THIS IS UNADITED SOFTWARE. DO NOT EVEN THINK ABOUT USING IT._
+
+In its current state you'll probably be unable to do anything useful anyways.
+
+This is a Jugend hackt project. It is possible that it will be unmaintained in the future.
+
+== Building and Documentation
+
+We recommend using nix:
+
+[source,shell]
+----
+nix-shell shell.nix # for dependencies
+cabal configure
+cabal build
+cabal haddock # documentation
+cabal repl    # for playing around
+----
+
+== Get in touch!
+
+* …with the https://github.com/ricochet-im/ricochet#other[original ricochet-developers]
+* …with us: `#Jugendhackt` on Freenode
