@@ -4,24 +4,25 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { cabal-install, mkDerivation, base, bytestring, containers, lens, mtl
-      , network, network-anonymous-tor, stdenv, transformers
+  f = { cabal-install, mkDerivation, attoparsec, base, bytestring, containers
+      , lens, mtl, network, network-anonymous-tor, socks, stdenv
+      , transformers
       }:
       mkDerivation {
         pname = "haskell-ricochet";
         version = "0.1.0.0";
         src = ./.;
         libraryHaskellDepends = [ cabal-install
-          base bytestring containers lens mtl network network-anonymous-tor
-          transformers
+          attoparsec base bytestring containers lens mtl network
+          network-anonymous-tor socks transformers
         ];
         description = "ricochet reimplementation in Haskell";
         license = stdenv.lib.licenses.gpl3;
       };
 
   haskellPackages = if compiler == "default"
-                       then pkgs.haskellPackages
-                       else pkgs.haskell.packages.${compiler};
+                      then pkgs.haskellPackages
+                      else pkgs.haskell.packages.${compiler};
 
   drv = haskellPackages.callPackage f {};
 
