@@ -24,7 +24,7 @@ It is written in Haskell because Haskell is our favourite language – for good 
 
 == Stability and Security
 
-_THIS IS NOT EVEN ALPHA SOFTWARE. THIS IS UNADITED SOFTWARE. DO NOT EVEN THINK ABOUT USING IT._
+_THIS IS NOT EVEN ALPHA SOFTWARE. THIS IS UNAUDITED SOFTWARE. DO NOT EVEN THINK ABOUT USING IT._
 
 In its current state you'll probably be unable to do anything useful anyways.
 
