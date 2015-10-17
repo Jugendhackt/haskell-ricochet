@@ -19,6 +19,7 @@ library
   exposed-modules:     Network.Ricochet.Types
                      , Network.Ricochet.Protocol.Lowest
                      , Network.Ricochet.Version
+                     , Network.Ricochet.Monad
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base

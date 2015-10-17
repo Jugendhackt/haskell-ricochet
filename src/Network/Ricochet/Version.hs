@@ -1,7 +1,7 @@
 module Network.Ricochet.Version
   (Versions()) where
 
-import           Network.Ricochet.Types
+import           Network.Ricochet.Monad
 
 import           Data.Map               (Map ())
 import           GHC.Word               (Word8 ())
