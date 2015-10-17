@@ -37,7 +37,6 @@ makeLenses ''RicochetState
 -- so, reads and returns it.
 peekPacket :: Connection -> Ricochet (Maybe Packet)
 peekPacket con = do
-  liftIO $ hSetBuffering (con ^. cHandle) NoBuffering
   readBytes <- liftIO $ B.hGetNonBlocking (con ^. cHandle) max
   inputBuffer <- con' . cInputBuffer <%= (<> readBytes)
   liftIO $ print inputBuffer
@@ -54,3 +53,6 @@ peekPacket con = do
 nextPacket :: Connection -> Ricochet Packet
 nextPacket = do
 -}
+
+sendPacket :: Connection -> Packet -> Ricochet ()
+sendPacket con pkt = liftIO . B.hPutStr (con ^. cHandle) $ dumpPacket pkt
