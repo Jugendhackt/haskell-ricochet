@@ -4,13 +4,15 @@
 module Network.Ricochet.Monad
   ( Ricochet (..)
   , RicochetState (..)
-  , serverSocket, connections, peekPacket
+  , serverSocket, connections
+  , peekPacket, nextPacket
   ) where
 
 import           Network.Ricochet.Types
 import           Network.Ricochet.Protocol.Lowest
 
 import           Control.Applicative    (Applicative (..))
+import           Control.Concurrent     (threadDelay)
 import           Control.Lens
 import           Control.Monad.IO.Class (MonadIO (..))
 import           Control.Monad.State    (MonadState (..), StateT (..))
@@ -39,7 +41,6 @@ peekPacket :: Connection -> Ricochet (Maybe Packet)
 peekPacket con = do
   readBytes <- liftIO $ B.hGetNonBlocking (con ^. cHandle) max
   inputBuffer <- con' . cInputBuffer <%= (<> readBytes)
-  liftIO $ print inputBuffer
   case parsePacket inputBuffer of
     Just (packet, bs) -> do
       -- FIXME: Should be: con' . cInputBuffer .= bs
@@ -49,10 +50,13 @@ peekPacket con = do
   where max = fromIntegral (maxBound :: Word16)
         con' = connections . traversed . filtered (== con)
 
-{- TODO: Blocking version of peekPacket
 nextPacket :: Connection -> Ricochet Packet
-nextPacket = do
--}
+nextPacket con = do
+  maybePacket <- peekPacket con
+  case maybePacket of
+    Just pkt -> return pkt
+    Nothing -> liftIO (threadDelay delay) >> nextPacket con
+  where delay = round $ 10 ** 4
 
 sendPacket :: Connection -> Packet -> Ricochet ()
 sendPacket con pkt = liftIO . B.hPutStr (con ^. cHandle) $ dumpPacket pkt
