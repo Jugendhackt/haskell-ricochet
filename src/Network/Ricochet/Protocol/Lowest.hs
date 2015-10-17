@@ -20,7 +20,7 @@ instance Show b => Show (Sometimes a b) where
   show (ThereYouGo b) = "ThereYouGo" <> show b
 
 -- | Parses the low-level representation of a Packet.
-parsePacket :: B.ByteString -> (Sometimes B.ByteString (Packet, B.ByteString))
+parsePacket :: ByteString -> (Sometimes ByteString (Packet, ByteString))
 parsePacket bs = case parseWord16 bs of
     Just (size, bs') -> case parseWord16 bs' of
       Just (channelId, bs'') -> case (toInteger . B.length $ bs'') `compare` toInteger size of
@@ -31,14 +31,14 @@ parsePacket bs = case parseWord16 bs of
     Nothing -> NotYet $ parsePacket . (<> bs)
 
 -- | Serializes a Packet to yield it’s low-level representation
-dumpPacket :: Packet -> B.ByteString
+dumpPacket :: Packet -> ByteString
 dumpPacket (MkPacket w1 w2 bs) = toStrict . toLazyByteString $ word16BE w1 <> word16BE w2 <> byteString bs
 
-splitInPackets :: Word16 -> B.ByteString -> [Packet]
+splitInPackets :: Word16 -> ByteString -> [Packet]
 splitInPackets chan bs = let (ps, bs') = splitInPackets' chan ([], bs)
                          in ps <> [MkPacket (fromIntegral . B.length $ bs') chan bs']
 
-splitInPackets' :: Word16 -> ([Packet], B.ByteString) -> ([Packet], B.ByteString)
+splitInPackets' :: Word16 -> ([Packet], ByteString) -> ([Packet], ByteString)
 splitInPackets' chan (ps, bs) =
     case (toInteger . B.length $ bs) `compare` toInteger packLen of
       EQ -> (ps <> [MkPacket maxBound chan bs], B.empty)
@@ -47,7 +47,7 @@ splitInPackets' chan (ps, bs) =
   where packLen = fromIntegral 10 --(maxBound :: Word16)
 
 -- | Parses two Word8s from a ByteString into one Word16
-parseWord16 :: B.ByteString -> Maybe (Word16, B.ByteString)
+parseWord16 :: ByteString -> Maybe (Word16, ByteString)
 parseWord16 bs = do
     if B.length bs < 2
         then Nothing
