@@ -60,3 +60,6 @@ nextPacket con = do
 
 sendPacket :: Connection -> Packet -> Ricochet ()
 sendPacket con pkt = liftIO . B.hPutStr (con ^. cHandle) $ dumpPacket pkt
+
+sendByteString :: Connection -> Word16 -> ByteString -> Ricochet ()
+sendByteString con chan bs = mapM_ (sendPacket con) $ splitInPackets chan bs
