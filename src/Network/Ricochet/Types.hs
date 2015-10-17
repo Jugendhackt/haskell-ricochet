@@ -2,6 +2,7 @@
 module Network.Ricochet.Types
   ( Packet(..)
   , Connection(..)
+  , Contact(..)
   , size, channelID, packetData, socket) where
 
 import           Control.Lens
@@ -24,5 +25,11 @@ data Connection = MkConnection
   { _socket :: Socket
   } deriving (Show)
 
+data Contact = MkContact
+  { _name       :: String
+  , _ricochetID :: String
+  }
+
 makeLenses ''Packet
 makeLenses ''Connection
+makeLenses ''Contact

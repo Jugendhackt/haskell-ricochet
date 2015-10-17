@@ -21,6 +21,7 @@ newtype Ricochet a = Ricochet { runRicochet :: StateT RicochetState IO a }
 data RicochetState = MkRicochetState
   { _serverSocket :: Socket
   , _connections  :: [Connection]
+  , _contactList  :: [Contact]
   }
 
 makeLenses ''RicochetState
