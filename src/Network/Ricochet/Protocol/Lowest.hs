@@ -1,21 +1,35 @@
 {-# LANGUAGE TupleSections #-}
 module Network.Ricochet.Protocol.Lowest
-  (parsePacket, dumpPacket) where
+  (parsePacket, dumpPacket, parseWord16) where
 
+import           Data.Bifunctor         (first)
 import           Data.Bits              (shiftL)
 import qualified Data.ByteString        as B
+import           Data.ByteString        (ByteString())
 import           Data.ByteString.Builder(word16BE, byteString, toLazyByteString)
 import           Data.ByteString.Lazy   (toStrict)
 import           Data.Monoid            ((<>))
 import           Data.Word              (Word8, Word16)
 import           Network.Ricochet.Types (Packet (..))
 
+data Sometimes a b = NotYet (a -> Sometimes a b)
+                   | ThereYouGo b
+
+instance Show b => Show (Sometimes a b) where
+  show (NotYet _) = "NotYet"
+  show (ThereYouGo b) = "ThereYouGo" <> show b
+
 -- | Parses the low-level representation of a Packet.
-parsePacket :: B.ByteString -> Maybe Packet
-parsePacket bs = do
-  (w1, bs')  <- parseWord16 bs
-  (w2, bs'') <- parseWord16 bs'
-  return $ MkPacket w1 w2 bs''
+parsePacket :: B.ByteString -> (Sometimes B.ByteString (Packet, B.ByteString))
+parsePacket bs = case parseWord16 bs of
+    Just (size, bs') -> case parseWord16 bs' of
+      Just (channelId, bs'') -> case (toInteger . B.length $ bs'') `compare` toInteger size of
+        EQ -> ThereYouGo . (,B.empty) $ MkPacket size channelId bs''
+        GT -> ThereYouGo $ (MkPacket size channelId $ B.take (conv size) bs'', B.drop (conv size) bs'')
+        LT -> NotYet $ parsePacket . (<> bs'')
+      Nothing -> NotYet $ parsePacket . (<> bs')
+    Nothing -> NotYet $ parsePacket . (<> bs)
+  where conv = fromInteger . toInteger
 
 -- | Serializes a Packet to yield it’s low-level representation
 dumpPacket :: Packet -> B.ByteString

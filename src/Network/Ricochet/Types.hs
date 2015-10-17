@@ -13,11 +13,16 @@ data Packet = MkPacket
   { _size       :: Word16
   , _channelID  :: Word16
   , _packetData :: ByteString
-  }
+  } deriving (Show)
+
+data RicochetState = MkRicochetState
+  { _serverSocket :: Socket
+  , _connections  :: [Connection]
+  } deriving (Show)
 
 data Connection = MkConnection
   { _socket :: Socket
-  }
+  } deriving (Show)
 
 makeLenses ''Packet
 makeLenses ''Connection
