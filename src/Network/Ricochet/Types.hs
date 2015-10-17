@@ -18,7 +18,8 @@ newtype Ricochet a = Ricochet { runRicochet :: StateT RicochetState IO a }
 data Packet = MkPacket
   { _size       :: Int
   , _channelID  :: Int
-  , _packetData :: ByteString }
+  , _packetData :: ByteString
+  }
 
 data RicochetState = MkRicochetState
   { _serverSocket :: Socket
