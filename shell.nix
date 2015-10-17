@@ -4,12 +4,12 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, base, stdenv }:
+  f = { mkDerivation, base, mtl, network, stdenv }:
       mkDerivation {
         pname = "haskell-ricochet";
         version = "0.1.0.0";
         src = ./.;
-        libraryHaskellDepends = [ base ];
+        libraryHaskellDepends = [ base mtl network ];
         description = "ricochet reimplementation in Haskell";
         license = stdenv.lib.licenses.gpl3;
       };
