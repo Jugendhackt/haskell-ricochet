@@ -11,3 +11,8 @@ import           Network.Socket         (Socket ())
 newtype Ricochet a = Ricochet { runRicochet :: ReaderT Socket IO a }
   deriving ( Functor, Applicative, Monad
            , MonadIO, MonadReader Socket)
+
+data Packet = MkPacket {
+    size       :: Int
+  , channelID  :: Int
+  , packetData :: ByteString }
