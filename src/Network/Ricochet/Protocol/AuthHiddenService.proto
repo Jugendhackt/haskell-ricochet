@@ -1,11 +1,11 @@
 package Protocol.Data.AuthHiddenService;
 import "ControlChannel.proto";
 
-extend Control.OpenChannel {
+extend Protocol.Data.Control.OpenChannel {
     optional bytes client_cookie = 7200;    // 16 random bytes
 }
 
-extend Control.ChannelResult {
+extend Protocol.Data.Control.ChannelResult {
     optional bytes server_cookie = 7200;      // 16 random bytes
 }
 

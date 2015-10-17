@@ -6,11 +6,11 @@ enum Limits {
     NicknameMaxCharacters = 30;
 }
 
-extend Control.OpenChannel {
+extend Protocol.Data.Control.OpenChannel {
     optional ContactRequest contact_request = 200;
 }
 
-extend Control.ChannelResult {
+extend Protocol.Data.Control.ChannelResult {
     optional Response response = 201;
 }
 
