@@ -4,15 +4,15 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, base, lens, mtl, network
-      , network-anonymous-tor, stdenv
+  f = { cabal-install, mkDerivation, base, bytestring, lens, mtl, network
+      , network-anonymous-tor, stdenv, transformers
       }:
       mkDerivation {
         pname = "haskell-ricochet";
         version = "0.1.0.0";
         src = ./.;
-        libraryHaskellDepends = [
-          base lens mtl network network-anonymous-tor
+        libraryHaskellDepends = [ cabal-install
+          base bytestring lens mtl network network-anonymous-tor transformers
         ];
         description = "ricochet reimplementation in Haskell";
         license = stdenv.lib.licenses.gpl3;
