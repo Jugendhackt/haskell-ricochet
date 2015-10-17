@@ -18,17 +18,15 @@ data Packet = MkPacket
   , _channelID  :: Int
   , _packetData :: ByteString }
 
-makeLenses ''Packet
-
 data RicochetState = MkRicochetState
   { _serverSocket :: Socket
   , _connections :: [Connection]
   }
 
-makeLenses ''RicochetState
-
 data Connection = MkConnection
   { _socket :: Socket
   }
 
+makeLenses ''Packet
+makeLenses ''RicochetState
 makeLenses ''Connection
