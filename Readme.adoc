@@ -14,8 +14,5 @@ The issue we had was it not being built up modularily and enforcing a GUI, rende
 
 === Get in touch
 
-* with the original ricoche-developers: john.brooks@dereferenced.net / ricochet:rs7ce36jsj24ogfw
+* with the original ricochet-developers: john.brooks@dereferenced.net / ricochet:rs7ce36jsj24ogfw
 * with the Jugend-Hackt-Team: #Jugendhackt on Freenode
-
-
-
