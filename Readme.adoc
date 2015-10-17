@@ -1,0 +1,21 @@
+ricochet (in Haskell)
+==========
+shak-mar, brotknust, Bez, sternenseemann, hackalive, Hanfi10
+:toc:
+:showtitle:
+
+„Die Library zu [ricochet](http://ricochet.im). Cryptographie nutzbar auch für N3RDS.”
+
+== Idea
+
+There is this messenger ricochet with this fancy idea of being absolutely OTR as well as plausible deniability, meaning there won't be proof of you ever having had any conversation at all.
+
+The issue we had was it not being built up modularily and enforcing a GUI, rendering it useless for people of other beliefs not using a mouse at all. 
+
+=== Get in touch
+
+ -> with the original ricoche-developers: john.brooks@dereferenced.net / ricochet:rs7ce36jsj24ogfw
+ -> with the Jugend-Hackt-Team: #Jugendhackt on Freenode
+
+
+
