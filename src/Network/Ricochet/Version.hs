@@ -17,7 +17,9 @@ import           Control.Applicative        ((<|>))
 import           Data.Attoparsec.ByteString
 import           Data.ByteString            (ByteString ())
 import qualified Data.ByteString            as B
-import           Data.Map                   (Map (), keys, lookup, size)
+import           Data.List                  (elem)
+import           Data.Map                   (Map (), filterWithKey, keys,
+                                             lookup, size)
 import           Data.Maybe                 (fromJust)
 import           Data.Monoid                ((<>))
 import           GHC.Word                   (Word8 ())
@@ -33,7 +35,7 @@ type ConnectionHandler = Connection -> Ricochet ()
 type Versions = Map Version ConnectionHandler
 
 -- | Parses Introduction and Version Negotiation of the protocol
-parseIntroduction :: Versions -> ByteString -> Maybe (Maybe ([ConnectionHandler], ByteString))
+parseIntroduction :: Versions -> ByteString -> Maybe (Maybe (Versions, ByteString))
 parseIntroduction vers bs = maybeResult' . parse (introductionParser vers) $ bs
 
 maybeResult' :: Result r -> Maybe (Maybe (r, ByteString))
@@ -41,12 +43,12 @@ maybeResult' (Done i r) = Just $ Just (r, i)
 maybeResult' (Partial _) = Just Nothing
 maybeResult' _          = Nothing
 
-introductionParser :: Map Version ConnectionHandler -> Parser [ConnectionHandler]
+introductionParser :: Map Version ConnectionHandler -> Parser (Map Version ConnectionHandler)
 introductionParser supportedVersions = do
   string "IM"
   nVersions <- anyWord8
-  fmap (fromJust . (flip lookup $ supportedVersions)) <$>
-    count (fromIntegral nVersions) anyWord8
+  versions <- count (fromIntegral nVersions) anyWord8
+  return $filterWithKey (\k _ -> k `elem` versions) supportedVersions
 
 dumpIntroduction :: Versions -> ByteString
 dumpIntroduction supportedVersions = "IM" <> B.singleton (fromIntegral . size $ supportedVersions :: Word8) <>

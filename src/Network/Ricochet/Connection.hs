@@ -10,16 +10,18 @@ import           Network.Ricochet.Monad
 import           Network.Ricochet.Types
 import           Network.Ricochet.Version
 
-import           Control.Concurrent     (threadDelay)
+import           Control.Concurrent       (threadDelay)
 import           Control.Lens
-import           Control.Monad.IO.Class (liftIO)
-import           Data.ByteString        (ByteString())
-import qualified Data.ByteString        as B
-import qualified Data.Map               as M
-import           Data.Monoid            ((<>))
-import           Network                (PortID (..), accept, listenOn)
-import           Network.Socks5         (socksConnectTo)
-import           System.IO              (Handle (), hSetBuffering, BufferMode(..))
+import           Control.Monad.IO.Class   (liftIO)
+import           Data.ByteString          (ByteString ())
+import qualified Data.ByteString          as B
+import qualified Data.Map                 as M
+import           Data.Maybe               (fromJust)
+import           Data.Monoid              ((<>))
+import           Network                  (PortID (..), accept, listenOn)
+import           Network.Socks5           (socksConnectTo)
+import           System.IO                (BufferMode (..), Handle (),
+                                           hSetBuffering)
 
 createState :: PortID -> IO RicochetState
 createState port = do
@@ -60,21 +62,19 @@ initConnection handle isClientSide = do
   else do
     maybeStuff <- liftIO $ awaitIntroMessage vers handle
     case maybeStuff of
-      Just (x:xs, rest) -> do
-        --let chosen = foldl max (M.keys handlers)
-        --liftIO . putStrLn $ "We have chosen " <> show chosen <> "."
-        liftIO . putStrLn $ "We can choose between " <> show (length xs + 1) <> " versions!"
-        x con
-      Just ([], rest) -> do
-        liftIO $ putStrLn "Remote side sent no versions"
+      Just (handlers, rest) -> do
+        let chosen = foldl1 max (M.keys handlers)
+        liftIO . putStrLn $ "We have chosen " <> show chosen <> "."
+        liftIO . putStrLn $ "We can choose between " <> show (M.size handlers) <> " versions!"
+        (fromJust $ M.lookup chosen handlers) con
       Nothing -> liftIO $ putStrLn "Remote side sent invalid version negotiation."
   return con
 
-awaitIntroMessage :: Versions -> Handle -> IO (Maybe ([ConnectionHandler], ByteString))
+awaitIntroMessage :: Versions -> Handle -> IO (Maybe (Versions, ByteString))
 awaitIntroMessage vers handle = do
   introMessage <- B.hGetNonBlocking handle maxBound
   case parseIntroduction vers introMessage of
-   Just (Just pair) -> return $ Just pair
+   Just (Just map) -> return $ Just map
    Just Nothing -> liftIO (threadDelay delay) >> awaitIntroMessage vers handle
    Nothing -> return Nothing
   where delay = round $ 10 ** 4
