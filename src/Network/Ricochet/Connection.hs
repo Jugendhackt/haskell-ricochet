@@ -27,13 +27,7 @@ import           System.IO                (BufferMode (..), Handle (),
 createState :: PortID -> IO RicochetState
 createState port = do
   sock <- listenOn port
-  return $ MkRicochetState sock [] [] (PortNumber 9050) defaultVersions
-
-defaultVersions :: Versions
-defaultVersions = M.fromList
-  [ ( 0x01
-    , \con -> return ())
-  ]
+  return $ MkRicochetState sock [] [] (PortNumber 9050) M.empty
 
 awaitConnection :: Ricochet Connection
 awaitConnection = do
