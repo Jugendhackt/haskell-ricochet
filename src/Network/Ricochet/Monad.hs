@@ -7,7 +7,7 @@ module Network.Ricochet.Monad
   , serverSocket, connections
   , peekPacket, nextPacket
   , socksPort, versions
-  , sendPacket
+  , sendPacket, sendByteString
   ) where
 
 import           Network.Ricochet.Protocol.Lowest
