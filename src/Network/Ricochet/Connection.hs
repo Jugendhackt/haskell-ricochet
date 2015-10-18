@@ -66,7 +66,7 @@ initConnection handle isClientSide = do
     case fmap (first M.toList) maybeStuff of
       Just ([], rest) -> do
         liftIO $ putStrLn "We don’t have any versions in common with remote side"
-        liftIO . B.hPutStr $ B.pack [0xFF]
+        liftIO . B.hPutStr handle $ B.pack [0xFF]
       Just (handlers, rest) -> do
         let chosen = foldl1 max (fmap fst handlers)
         liftIO . putStrLn $ "We can choose between " <> show (length handlers) <> " versions!"
