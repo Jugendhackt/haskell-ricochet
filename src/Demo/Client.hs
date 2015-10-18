@@ -18,5 +18,8 @@ main = do
     versions %= (M.insert 20 (\con -> do
       liftIO $ putStrLn "Version 20"))
     con <- connectTo "b362vohgp2nccztw.onion" (PortNumber 9878)
-    sendByteString con 0x00 "Some string 1234567890"
+    nextPacket con >>= liftIO . print
+    sendByteString con 0x00 "12345"
     sendByteString con 0x00 "Zweites Paket huhu"
+    nextPacket con >>= liftIO . print
+    nextPacket con >>= liftIO . print
