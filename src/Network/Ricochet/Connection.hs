@@ -10,6 +10,7 @@ import           Network.Ricochet.Monad
 import           Network.Ricochet.Types
 import           Network.Ricochet.Version
 
+import           Control.Arrow            (first)
 import           Control.Concurrent       (threadDelay)
 import           Control.Lens
 import           Control.Monad.IO.Class   (liftIO)
@@ -61,12 +62,17 @@ initConnection handle isClientSide = do
     else liftIO $ putStrLn "Server responded with invalid protocol choice"
   else do
     maybeStuff <- liftIO $ awaitIntroMessage vers handle
-    case maybeStuff of
+    -- TODO: This is not elegant, use pattern guards
+    case fmap (first M.toList) maybeStuff of
+      Just ([], rest) -> do
+        liftIO $ putStrLn "We don’t have any versions in common with remote side"
+        liftIO . B.putStr $ B.pack [0xFF]
       Just (handlers, rest) -> do
-        let chosen = foldl1 max (M.keys handlers)
+        let chosen = foldl1 max (fmap fst handlers)
         liftIO . putStrLn $ "We have chosen " <> show chosen <> "."
-        liftIO . putStrLn $ "We can choose between " <> show (M.size handlers) <> " versions!"
-        (fromJust $ M.lookup chosen handlers) con
+        liftIO . putStrLn $ "We can choose between " <> show (length handlers) <> " versions!"
+        liftIO . B.putStr $ B.pack [chosen]
+        (fromJust $ lookup chosen handlers) con
       Nothing -> liftIO $ putStrLn "Remote side sent invalid version negotiation."
   return con
 
