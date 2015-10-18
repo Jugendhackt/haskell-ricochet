@@ -45,3 +45,4 @@ executable server
                      , bytestring
                      , network
                      , haskell-ricochet
+                     , lens
