@@ -42,7 +42,7 @@ splitInPackets' chan (ps, bs) =
       EQ -> (ps <> [MkPacket maxBound chan bs], B.empty)
       LT -> (ps, bs)
       GT -> splitInPackets' chan (ps <> [MkPacket maxBound chan (B.take packLen bs)], B.drop packLen bs)
-  where packLen = fromIntegral 10 --(maxBound :: Word16)
+  where packLen = fromIntegral (maxBound :: Word16)
 
 -- | Parses two Word8s from a ByteString into one Word16
 parseWord16 :: ByteString -> Maybe (Word16, ByteString)
