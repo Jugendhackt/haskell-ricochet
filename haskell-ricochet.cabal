@@ -46,3 +46,13 @@ executable server
                      , network
                      , haskell-ricochet
                      , lens
+
+executable client
+  main-is:             src/Demo/Client.hs
+  build-depends:       base
+                     , mtl
+                     , containers
+                     , bytestring
+                     , network
+                     , haskell-ricochet
+                     , lens
