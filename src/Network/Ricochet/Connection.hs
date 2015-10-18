@@ -69,8 +69,8 @@ initConnection handle isClientSide = do
         liftIO . B.putStr $ B.pack [0xFF]
       Just (handlers, rest) -> do
         let chosen = foldl1 max (fmap fst handlers)
-        liftIO . putStrLn $ "We have chosen " <> show chosen <> "."
         liftIO . putStrLn $ "We can choose between " <> show (length handlers) <> " versions!"
+        liftIO . putStrLn $ "We have chosen " <> show chosen <> "."
         liftIO . B.putStr $ B.pack [chosen]
         (fromJust $ lookup chosen handlers) con
       Nothing -> liftIO $ putStrLn "Remote side sent invalid version negotiation."
@@ -78,7 +78,7 @@ initConnection handle isClientSide = do
 
 awaitIntroMessage :: Versions -> Handle -> IO (Maybe (Versions, ByteString))
 awaitIntroMessage vers handle = do
-  introMessage <- B.hGetNonBlocking handle maxBound
+  introMessage <- B.hGetNonBlocking handle 300
   case parseIntroduction vers introMessage of
    Just (Just map) -> return $ Just map
    Just Nothing -> liftIO (threadDelay delay) >> awaitIntroMessage vers handle
