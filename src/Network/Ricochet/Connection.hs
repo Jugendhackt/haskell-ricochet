@@ -72,6 +72,7 @@ initConnection handle isClientSide = do
         liftIO . putStrLn $ "We can choose between " <> show (length handlers) <> " versions!"
         liftIO . putStrLn $ "We have chosen " <> show chosen <> "."
         liftIO . B.hPutStr handle $ B.pack [chosen]
+        connections . traverse . filtered (== con) . cInputBuffer %= (<> rest)
         (fromJust $ lookup chosen handlers) con
       Nothing -> liftIO $ putStrLn "Remote side sent invalid version negotiation."
   return con
