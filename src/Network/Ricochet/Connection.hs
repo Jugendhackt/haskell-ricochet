@@ -66,12 +66,12 @@ initConnection handle isClientSide = do
     case fmap (first M.toList) maybeStuff of
       Just ([], rest) -> do
         liftIO $ putStrLn "We don’t have any versions in common with remote side"
-        liftIO . B.putStr $ B.pack [0xFF]
+        liftIO . B.hPutStr $ B.pack [0xFF]
       Just (handlers, rest) -> do
         let chosen = foldl1 max (fmap fst handlers)
         liftIO . putStrLn $ "We can choose between " <> show (length handlers) <> " versions!"
         liftIO . putStrLn $ "We have chosen " <> show chosen <> "."
-        liftIO . B.putStr $ B.pack [chosen]
+        liftIO . B.hPutStr handle $ B.pack [chosen]
         (fromJust $ lookup chosen handlers) con
       Nothing -> liftIO $ putStrLn "Remote side sent invalid version negotiation."
   return con
