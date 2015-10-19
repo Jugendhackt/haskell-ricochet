@@ -12,7 +12,7 @@ Ricochet has a number of very nice features:
 
 * Completely off-the-record messaging
 * Plausible deniability
-* Good encryption thanks to TOR
+* Good encryption thanks to Tor
 
 The original developers decided to build a monolithic architecture of the implementation and a Qt GUI - for good reasons. Now there are some reasons why we want to have a library:
 
