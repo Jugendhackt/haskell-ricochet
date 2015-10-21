@@ -4,14 +4,15 @@ module Network.Ricochet.Util
   , joinWord8s
   ) where
 
+import           Control.Monad              (liftM2)
 import           Data.Attoparsec.ByteString
 import           Data.Bits                  (shiftL)
 import           Data.ByteString            (ByteString ())
 import           GHC.Word
 
 -- | Joins two Word8s into a single Word16
-joinWord8s :: (Word8, Word8) -> Word16
-joinWord8s (a, b) = (fromIntegral a `shiftL` 8) + fromIntegral b
+joinWord8s :: Word8 -> Word8 -> Word16
+joinWord8s a b = (fromIntegral a `shiftL` 8) + fromIntegral b
 
 -- | Takes an attoparsec result and converts it
 -- into a representation that is useful for our
@@ -23,7 +24,4 @@ maybeResult' _          = Nothing
 
 -- | Parses two bytes into a Word16
 anyWord16 :: Parser Word16
-anyWord16 = do
-  w1 <- anyWord8
-  w2 <- anyWord8
-  return $ joinWord8s (w1, w2)
+anyWord16 = liftM2 joinWord8s anyWord8 anyWord8
