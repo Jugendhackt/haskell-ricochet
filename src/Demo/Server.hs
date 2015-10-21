@@ -17,11 +17,8 @@ import           Network                     hiding (connectTo)
 main = do
   state <- createState (PortNumber 9878)
   flip (runStateT . runRicochet) state $ do
-    versions %= (M.insert 20 (\con -> do
-      liftIO $ putStrLn "Version 20"))
+    versions %= (M.insert 1 (\_ -> return ()))
     con <- awaitConnection
-    sendByteString con 0x00 "Jeremy ist total cute!"
     forever $ do
       p <- nextPacket con
-      sendByteString con 0x00 $ "PONG " <> (p ^. pPacketData)
       liftIO $ print p
