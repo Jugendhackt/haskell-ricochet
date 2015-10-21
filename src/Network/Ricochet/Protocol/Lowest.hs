@@ -44,7 +44,7 @@ splitInPackets chan bs = let (ps, bs') = splitInPackets' chan ([], bs)
 splitInPackets' :: Word16 -> ([Packet], ByteString) -> ([Packet], ByteString)
 splitInPackets' chan (ps, bs) =
     case (toInteger . B.length $ bs) `compare` toInteger packLen of
-      EQ -> (ps <> [MkPacket maxBound chan bs], B.empty)
+      EQ -> (ps <> [makePacket chan bs], B.empty)
       LT -> (ps, bs)
-      GT -> splitInPackets' chan (ps <> [MkPacket maxBound chan (B.take packLen bs)], B.drop packLen bs)
-  where packLen = fromIntegral (maxBound :: Word16)
+      GT -> splitInPackets' chan (ps <> [makePacket chan (B.take packLen bs)], B.drop packLen bs)
+  where packLen = fromIntegral (maxBound :: Word16) - 4
