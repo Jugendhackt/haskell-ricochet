@@ -11,6 +11,7 @@ module Network.Ricochet.Version
 import           Prelude                    hiding (lookup)
 
 import           Network.Ricochet.Monad
+import           Network.Ricochet.Util
 import           Network.Ricochet.Types
 
 import           Control.Applicative        ((<|>))
@@ -38,17 +39,12 @@ type Versions = Map Version ConnectionHandler
 parseIntroduction :: Versions -> ByteString -> Maybe (Maybe (Versions, ByteString))
 parseIntroduction vers bs = maybeResult' . parse (introductionParser vers) $ bs
 
-maybeResult' :: Result r -> Maybe (Maybe (r, ByteString))
-maybeResult' (Done i r) = Just $ Just (r, i)
-maybeResult' (Partial _) = Just Nothing
-maybeResult' _          = Nothing
-
 introductionParser :: Map Version ConnectionHandler -> Parser (Map Version ConnectionHandler)
 introductionParser supportedVersions = do
   string "IM"
   nVersions <- anyWord8
   versions <- count (fromIntegral nVersions) anyWord8
-  return $filterWithKey (\k _ -> k `elem` versions) supportedVersions
+  return $ filterWithKey (\k _ -> k `elem` versions) supportedVersions
 
 dumpIntroduction :: Versions -> ByteString
 dumpIntroduction supportedVersions = "IM" <> B.singleton (fromIntegral . size $ supportedVersions :: Word8) <>
