@@ -51,11 +51,12 @@ peekPacket con = do
   readBytes <- liftIO $ B.hGetNonBlocking (con ^. cHandle) max
   inputBuffer <- con' . cInputBuffer <%= (<> readBytes)
   case parsePacket inputBuffer of
-    Just (packet, bs) -> do
+    Success packet bs -> do
       -- FIXME: Should be: con' . cInputBuffer .= bs
       con' . cInputBuffer <%= (const bs)
       return $ Just packet
-    Nothing -> return Nothing
+    Unfinished -> return Nothing
+    Failure    -> return Nothing
   where max = fromIntegral (maxBound :: Word16)
         con' = connections . traversed . filtered (== con)
 
@@ -66,7 +67,7 @@ nextPacket con = do
   case maybePacket of
     Just pkt -> return pkt
     Nothing -> liftIO (threadDelay delay) >> nextPacket con
-  where delay = round $ 10 ** 4
+  where delay = round $ 10 ** 6
 
 -- | Sends a Packet to a connected User
 sendPacket :: Connection -> Packet -> Ricochet ()

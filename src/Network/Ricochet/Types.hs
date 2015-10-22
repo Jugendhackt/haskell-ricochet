@@ -3,6 +3,7 @@ module Network.Ricochet.Types where
 
 import           Control.Lens
 import           Data.ByteString (ByteString ())
+import qualified Data.ByteString as B
 import           Data.Word       (Word16)
 import           Network.Socket  (Socket ())
 import           System.IO       (Handle ())
@@ -13,6 +14,10 @@ data Packet = MkPacket
   , _pChannelID  :: Word16
   , _pPacketData :: ByteString
   } deriving (Show)
+
+-- | Function creating a packet with appropiate size from a Channel and a ByteString
+makePacket :: Word16 -> ByteString -> Packet
+makePacket chan bs = MkPacket (4 + (fromIntegral $ B.length bs)) chan bs
 
 -- | Representation of a connection between two ricochet users
 -- it consists of:
@@ -43,6 +48,12 @@ data Contact = MkContact
   { _cName       :: String
   , _cRicochetID :: String
   }
+
+-- | ParserResult holds the result of a parser in a way
+-- that is nice to handle within our library.
+data ParserResult a = Success a ByteString
+                    | Unfinished
+                    | Failure
 
 makeLenses ''Packet
 makeLenses ''Connection

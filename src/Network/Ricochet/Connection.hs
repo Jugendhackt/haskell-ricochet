@@ -60,12 +60,12 @@ initConnection handle isClientSide = do
     case fmap (first M.toList) maybeStuff of
       Just ([], rest) -> do
         liftIO $ putStrLn "We don’t have any versions in common with remote side"
-        liftIO . B.hPutStr handle $ B.pack [0xFF]
+        liftIO . B.hPutStr handle $ B.singleton 0xFF
       Just (handlers, rest) -> do
         let chosen = foldl1 max (fmap fst handlers)
         liftIO . putStrLn $ "We can choose between " <> show (length handlers) <> " versions!"
         liftIO . putStrLn $ "We have chosen " <> show chosen <> "."
-        liftIO . B.hPutStr handle $ B.pack [chosen]
+        liftIO . B.hPutStr handle $ B.singleton chosen
         connections . traverse . filtered (== con) . cInputBuffer %= (<> rest)
         (fromJust $ lookup chosen handlers) con
       Nothing -> liftIO $ putStrLn "Remote side sent invalid version negotiation."
@@ -75,7 +75,7 @@ awaitIntroMessage :: Versions -> Handle -> IO (Maybe (Versions, ByteString))
 awaitIntroMessage vers handle = do
   introMessage <- B.hGetNonBlocking handle 300
   case parseIntroduction vers introMessage of
-   Just (Just map) -> return $ Just map
-   Just Nothing -> liftIO (threadDelay delay) >> awaitIntroMessage vers handle
-   Nothing -> return Nothing
+   Success map b -> return $ Just (map, b)
+   Unfinished    -> liftIO (threadDelay delay) >> awaitIntroMessage vers handle
+   Failure       -> return Nothing
   where delay = round $ 10 ** 4
