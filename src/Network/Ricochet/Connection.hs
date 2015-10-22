@@ -75,7 +75,7 @@ awaitIntroMessage :: Versions -> Handle -> IO (Maybe (Versions, ByteString))
 awaitIntroMessage vers handle = do
   introMessage <- B.hGetNonBlocking handle 300
   case parseIntroduction vers introMessage of
-   Just (Just map) -> return $ Just map
-   Just Nothing -> liftIO (threadDelay delay) >> awaitIntroMessage vers handle
-   Nothing -> return Nothing
+   Success map b -> return $ Just (map, b)
+   Unfinished    -> liftIO (threadDelay delay) >> awaitIntroMessage vers handle
+   Failure       -> return Nothing
   where delay = round $ 10 ** 4

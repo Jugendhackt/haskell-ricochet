@@ -7,7 +7,8 @@ module Network.Ricochet.Protocol.Lowest
 
 import           Prelude                    hiding (take)
 
-import           Network.Ricochet.Types     (Packet (..), makePacket)
+import           Network.Ricochet.Types     (Packet (..), ParserResult (..),
+                                             makePacket)
 import           Network.Ricochet.Util
 
 import           Data.Attoparsec.ByteString
@@ -22,8 +23,8 @@ import           Data.Word                  (Word16, Word8)
 
 
 -- | Actually parses a packet.
-parsePacket :: ByteString -> Maybe (Maybe (Packet, ByteString))
-parsePacket bs = maybeResult' . parse packet $ bs
+parsePacket :: ByteString -> ParserResult Packet
+parsePacket bs = parserResult . parse packet $ bs
 
 -- | Parser for the low-level representation of a packet.
 packet :: Parser Packet

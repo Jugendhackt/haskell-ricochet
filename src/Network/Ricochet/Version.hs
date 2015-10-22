@@ -36,8 +36,8 @@ type ConnectionHandler = Connection -> Ricochet ()
 type Versions = Map Version ConnectionHandler
 
 -- | Parses Introduction and Version Negotiation of the protocol
-parseIntroduction :: Versions -> ByteString -> Maybe (Maybe (Versions, ByteString))
-parseIntroduction vers bs = maybeResult' . parse (introductionParser vers) $ bs
+parseIntroduction :: Versions -> ByteString -> ParserResult Versions
+parseIntroduction vers bs = parserResult . parse (introductionParser vers) $ bs
 
 introductionParser :: Map Version ConnectionHandler -> Parser (Map Version ConnectionHandler)
 introductionParser supportedVersions = do

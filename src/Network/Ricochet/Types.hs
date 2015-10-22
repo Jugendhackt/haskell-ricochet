@@ -49,6 +49,12 @@ data Contact = MkContact
   , _cRicochetID :: String
   }
 
+-- | ParserResult holds the result of a parser in a way
+-- that is nice to handle within our library.
+data ParserResult a = Success a ByteString
+                    | Unfinished
+                    | Failure
+
 makeLenses ''Packet
 makeLenses ''Connection
 makeLenses ''Contact

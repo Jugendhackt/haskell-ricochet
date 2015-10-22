@@ -51,12 +51,12 @@ peekPacket con = do
   readBytes <- liftIO $ B.hGetNonBlocking (con ^. cHandle) max
   inputBuffer <- con' . cInputBuffer <%= (<> readBytes)
   case parsePacket inputBuffer of
-    Just (Just (packet, bs)) -> do
+    Success packet bs -> do
       -- FIXME: Should be: con' . cInputBuffer .= bs
       con' . cInputBuffer <%= (const bs)
       return $ Just packet
-    Just Nothing -> return Nothing
-    Nothing -> return Nothing
+    Unfinished -> return Nothing
+    Failure    -> return Nothing
   where max = fromIntegral (maxBound :: Word16)
         con' = connections . traversed . filtered (== con)
 

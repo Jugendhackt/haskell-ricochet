@@ -1,8 +1,10 @@
 module Network.Ricochet.Util
-  ( maybeResult'
+  ( parserResult
   , anyWord16
   , joinWord8s
   ) where
+
+import           Network.Ricochet.Types
 
 import           Control.Monad              (liftM2)
 import           Data.Attoparsec.ByteString
@@ -15,12 +17,11 @@ joinWord8s :: Word8 -> Word8 -> Word16
 joinWord8s a b = (fromIntegral a `shiftL` 8) + fromIntegral b
 
 -- | Takes an attoparsec result and converts it
--- into a representation that is useful for our
--- library's internals
-maybeResult' :: Result r -> Maybe (Maybe (r, ByteString))
-maybeResult' (Done i r) = Just $ Just (r, i)
-maybeResult' (Partial _) = Just Nothing
-maybeResult' _          = Nothing
+-- into a our representation.
+parserResult :: Result r -> ParserResult r
+parserResult (Done i r)  = Success r i
+parserResult (Partial _) = Unfinished
+parserResult _           = Failure
 
 -- | Parses two bytes into a Word16
 anyWord16 :: Parser Word16
