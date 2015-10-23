@@ -8,6 +8,7 @@ module Network.Ricochet.Monad
   , peekPacket, nextPacket
   , socksPort, versions
   , sendPacket, sendByteString
+  , closeConnection
   ) where
 
 import           Network.Ricochet.Protocol.Lowest
@@ -20,13 +21,14 @@ import           Control.Monad.IO.Class           (MonadIO (..))
 import           Control.Monad.State              (MonadState (..), StateT (..))
 import           Data.ByteString                  (ByteString ())
 import qualified Data.ByteString                  as B
+import           Data.List                        (delete)
 import           Data.Map                         (Map (), lookup, empty)
 import           Data.Monoid                      ((<>))
 import           Data.Word                        (Word8, Word16)
 import           Network                          (PortID (..))
 import           Network.Socket                   (Socket ())
 import           System.IO                        (BufferMode (..), Handle (),
-                                                   hSetBuffering)
+                                                   hSetBuffering, hClose)
 
 -- | The Ricochet Monad which allows all stateful network computations we need to do
 newtype Ricochet a = Ricochet { runRicochet :: StateT RicochetState IO a }
@@ -83,3 +85,9 @@ sendByteString :: Connection -- ^ The Connection through which to send the ByteS
                -> ByteString -- ^ The ByteString to be sent
                -> Ricochet ()
 sendByteString con chan bs = mapM_ (sendPacket con) $ splitIntoPackets chan bs
+
+-- | Close a connection and remove it from the gg
+closeConnection :: Connection -> Ricochet ()
+closeConnection connection = do
+  connections %= delete connection
+  liftIO . hClose $ connection ^. cHandle

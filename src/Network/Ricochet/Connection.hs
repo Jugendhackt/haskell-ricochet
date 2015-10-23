@@ -82,9 +82,10 @@ offerVersions connection = do
   response <- liftIO $ B.hGet (connection ^. cHandle) 1
   let choice = head $ B.unpack response
   -- If the choice is valid
-  when (choice `M.member` availableVersions)
+  if choice `M.member` availableVersions
     -- Start the handler corresponding to the negotiated version
-    (availableVersions M.! choice $ connection)
+    then availableVersions M.! choice $ connection
+    else closeConnection connection
 
 -- | Picks a version supported by the peer and starts the corresponding handler
 pickVersion :: Connection -> Ricochet ()
@@ -93,7 +94,9 @@ pickVersion connection = do
   response <- liftIO . awaitIntroMessage availableVersions $ connection ^. cHandle
   case fmap (first M.toList) response of
     -- No matching versions
-    Just ([], rest) -> liftIO . B.hPutStr (connection ^. cHandle) $ B.singleton 0xFF
+    Just ([], rest) -> do
+      liftIO . B.hPutStr (connection ^. cHandle) $ B.singleton 0xFF
+      closeConnection connection
     -- The versions match
     Just (handlers, rest) -> do
       -- Always choose the latest version
@@ -103,7 +106,7 @@ pickVersion connection = do
       connections . traverse . filtered (== connection) . cInputBuffer %= (<> rest)
       -- Start the chosen handler
       (fromJust $ lookup chosen handlers) connection
-    Nothing -> return ()
+    Nothing -> closeConnection connection
 
 -- | Waits for the peer to send the introductory message
 awaitIntroMessage :: Versions -> Handle -> IO (Maybe (Versions, ByteString))
