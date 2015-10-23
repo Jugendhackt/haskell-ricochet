@@ -15,9 +15,11 @@ data Packet = MkPacket
   , _pPacketData :: ByteString
   } deriving (Show)
 
--- | Function creating a packet with appropiate size from a Channel and a ByteString
-makePacket :: Word16 -> ByteString -> Packet
-makePacket chan bs = MkPacket (4 + (fromIntegral $ B.length bs)) chan bs
+-- | Creates a packet with appropiate size from a Channel and a ByteString
+makePacket :: Word16     -- ^ ID of the channel the packet should be sent on
+           -> ByteString -- ^ The ByteString to be sent
+           -> Packet     -- ^ Returns a sendable packet
+makePacket chan bs = MkPacket (4 + fromIntegral (B.length bs)) chan bs
 
 -- | Representation of a connection between two ricochet users
 -- it consists of:
