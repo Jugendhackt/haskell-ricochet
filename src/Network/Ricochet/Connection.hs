@@ -62,11 +62,10 @@ initiateConnection handle isClientSide = do
 createConnection :: Handle              -- ^ Handle corresponding to the connection to the peer
                  -> Ricochet Connection -- ^ Returns the finished 'Connection'
 createConnection handle = do
+  -- Create the actual connection structure
+  let connection = makeConnection handle
   -- Disable buffering
   liftIO $ hSetBuffering handle NoBuffering
-  -- Create the actual connection structure
-  let channels = [MkChannel 0 $ MkChannelType "im.ricochet.control-channel"]
-      connection = MkConnection handle channels B.empty
   -- Add it to the list of open Connections
   connections %= (<> [connection])
   return connection

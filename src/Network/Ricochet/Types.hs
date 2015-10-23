@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Network.Ricochet.Types where
 
 import           Control.Lens
@@ -31,6 +32,12 @@ data Connection = MkConnection
   , _cChannels    :: [Channel]
   , _cInputBuffer :: ByteString
   }
+
+-- | Creates an initial 'Connection' from a Handle
+makeConnection :: Handle -> Connection
+makeConnection handle = -- Start out with only a Control Channel
+  let channels = [MkChannel 0 $ MkChannelType "im.ricochet.control-channel"]
+  in  MkConnection handle channels B.empty
 
 instance Eq Connection where
   a == b = _cHandle a == _cHandle b
