@@ -5,8 +5,10 @@ import           Data.Monoid         ((<>))
 import           System.Process      (callProcess)
 
 runHprotoc = callProcess "hprotoc"
-  [ "--haskell_out=src/Network/Ricochet"
+  [ "--haskell_out=src"
   , "--proto_path=src/Network/Ricochet/Protocol/proto"
+  , "--prefix=Network.Ricochet"
+  , "--lenses"
   , "AuthHiddenService.proto"
   , "ChatChannel.proto"
   , "ContactRequestChannel.proto"
