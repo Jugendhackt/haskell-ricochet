@@ -52,7 +52,7 @@ initiateConnection :: Handle              -- ^ Handle corresponding to the conne
                    -> Bool                -- ^ Wether this side accepted the connection
                    -> Ricochet Connection -- ^ Returns the finished 'Connection'
 initiateConnection handle isClientSide = do
-  connection <- createConnection handle isClientSide
+  connection <- createConnection handle
   if isClientSide
     then offerVersions connection
     else pickVersion connection
@@ -60,14 +60,13 @@ initiateConnection handle isClientSide = do
 
 -- | Creates a new 'Connection' and adds it to the list of open Connections
 createConnection :: Handle              -- ^ Handle corresponding to the connection to the peer
-                 -> Bool                -- ^ Wether this side accepted the connection
                  -> Ricochet Connection -- ^ Returns the finished 'Connection'
-createConnection handle isClientSide = do
+createConnection handle = do
   -- Disable buffering
   liftIO $ hSetBuffering handle NoBuffering
   -- Create the actual connection structure
   let channels = [MkChannel 0 $ MkChannelType "im.ricochet.control-channel"]
-      connection = MkConnection handle channels isClientSide B.empty
+      connection = MkConnection handle channels B.empty
   -- Add it to the list of open Connections
   connections %= (<> [connection])
   return connection

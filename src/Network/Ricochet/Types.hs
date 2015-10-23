@@ -29,7 +29,6 @@ makePacket chan bs = MkPacket (4 + fromIntegral (B.length bs)) chan bs
 data Connection = MkConnection
   { _cHandle      :: Handle
   , _cChannels    :: [Channel]
-  , _cIsClient    :: Bool
   , _cInputBuffer :: ByteString
   }
 
