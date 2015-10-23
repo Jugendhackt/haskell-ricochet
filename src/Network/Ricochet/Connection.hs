@@ -13,6 +13,7 @@ import           Network.Ricochet.Version
 import           Control.Arrow            (first)
 import           Control.Concurrent       (threadDelay)
 import           Control.Lens
+import           Control.Monad            (when)
 import           Control.Monad.IO.Class   (liftIO)
 import           Data.ByteString          (ByteString ())
 import qualified Data.ByteString          as B
@@ -81,10 +82,9 @@ offerVersions connection = do
   response <- liftIO $ B.hGet (connection ^. cHandle) 1
   let choice = head $ B.unpack response
   -- If the choice is valid
-  if choice `M.member` availableVersions
+  when (choice `M.member` availableVersions)
     -- Start the handler corresponding to the negotiated version
-    then availableVersions M.! choice $ connection
-    else liftIO $ putStrLn "Server responded with invalid protocol choice"
+    (availableVersions M.! choice $ connection)
 
 -- | Picks a version supported by the peer and starts the corresponding handler
 pickVersion :: Connection -> Ricochet ()
@@ -93,21 +93,17 @@ pickVersion connection = do
   response <- liftIO . awaitIntroMessage availableVersions $ connection ^. cHandle
   case fmap (first M.toList) response of
     -- No matching versions
-    Just ([], rest) -> do
-      liftIO $ putStrLn "We don’t have any versions in common with remote side"
-      liftIO . B.hPutStr (connection ^. cHandle) $ B.singleton 0xFF
+    Just ([], rest) -> liftIO . B.hPutStr (connection ^. cHandle) $ B.singleton 0xFF
     -- The versions match
     Just (handlers, rest) -> do
       -- Always choose the latest version
       let chosen = maximum (fmap fst handlers)
-      liftIO . putStrLn $ "We can choose between " <> show (length handlers) <> " versions!"
-      liftIO . putStrLn $ "We have chosen " <> show chosen <> "."
       liftIO . B.hPutStr (connection ^. cHandle) $ B.singleton chosen
       -- Append the rest of the response to the inputBuffer
       connections . traverse . filtered (== connection) . cInputBuffer %= (<> rest)
       -- Start the chosen handler
       (fromJust $ lookup chosen handlers) connection
-    Nothing -> liftIO $ putStrLn "Remote side sent invalid version negotiation."
+    Nothing -> return ()
 
 -- | Waits for the peer to send the introductory message
 awaitIntroMessage :: Versions -> Handle -> IO (Maybe (Versions, ByteString))
