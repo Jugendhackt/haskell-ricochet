@@ -1,6 +1,6 @@
 import Distribution.Simple
 
-import Data.Monoid    ((<>))
+import Data.Monoid    ((<>), mempty, Monoid (..))
 import System.Process (callProcess)
 
 runHprotoc = callProcess "hprotoc"
