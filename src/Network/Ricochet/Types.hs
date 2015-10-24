@@ -63,7 +63,7 @@ data Channel = MkChannel
 -- | The type of a channel is preliminarily represented by a ByteString for extensibility
 data ChannelType = MkChannelType ByteString
 
--- | A contact of our user, defined by his ID (TOR hidden service address without the .onion and the 'ricochet:' prefix) and his display name
+-- | A contact, defined by his ID (TOR hidden service address without the .onion and the 'ricochet:' prefix) and his display name
 data Contact = MkContact
   { _cName       :: String -- ^ The name assigned to the contact
   , _cRicochetID :: String -- ^ The ricochet ID of a user is their hidden service address without the ".onion"
