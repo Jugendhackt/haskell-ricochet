@@ -37,7 +37,6 @@ data ConnectionRole = Client | Server deriving (Eq, Show)
 -- it consists of:
 --  - open channels
 --  - wether our ricochet instance is the client
--- Equality is defined by equality of the socket
 data Connection = MkConnection
   { _cHandle         :: Handle         -- ^ The handle to send and receive signals on
   , _cChannels       :: [Channel]      -- ^ A list of the channels currently opened
@@ -51,6 +50,7 @@ makeConnection handle role = -- Start out with only a Control Channel
   let channels = [MkChannel 0 $ MkChannelType "im.ricochet.control-channel"]
   in  MkConnection handle channels B.empty role
 
+-- | Equality is defined by equality of the socket
 instance Eq Connection where
   a == b = _cHandle a == _cHandle b
 
