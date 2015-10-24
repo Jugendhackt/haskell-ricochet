@@ -56,7 +56,7 @@ peekPacket con = do
   -- Try parsing a full packet and return it on success
   case parsePacket inputBuffer of
     Success packet bs -> do
-      -- Removed the parsed portion from the inputBuffer
+      -- Remove the parsed portion from the inputBuffer
       -- FIXME: Should be: con' . cInputBuffer .= bs
       con' . cInputBuffer <%= const bs
       return $ Just packet
@@ -81,12 +81,12 @@ sendPacket con pkt = liftIO . B.hPutStr (con ^. cHandle) $ dumpPacket pkt
 
 -- | Packs a ByteString into Packets and sends it through the given Connection
 sendByteString :: Connection -- ^ The Connection through which to send the ByteString
-               -> Word16     -- ^ The ID of the channel the ByteString should be send on
+               -> Word16     -- ^ The ID of the channel the ByteString should be sent on
                -> ByteString -- ^ The ByteString to be sent
                -> Ricochet ()
 sendByteString con chan bs = mapM_ (sendPacket con) $ splitIntoPackets chan bs
 
--- | Close a connection and remove it from the gg
+-- | Closes a connection and removes it from the list of connections
 closeConnection :: Connection -> Ricochet ()
 closeConnection connection = do
   connections %= delete connection

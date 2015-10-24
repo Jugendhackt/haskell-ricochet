@@ -31,7 +31,7 @@ createState port = do
   sock <- listenOn port
   return $ MkRicochetState sock [] [] (PortNumber 9050) M.empty
 
--- | Waits until a new peer connects to initiae a connection
+-- | Waits until a new peer connects to initiate a connection
 awaitConnection :: Ricochet Connection
 awaitConnection = do
   sock <- use serverSocket

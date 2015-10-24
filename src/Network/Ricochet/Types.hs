@@ -16,7 +16,7 @@ data Packet = MkPacket
   , _pPacketData :: ByteString
   } deriving (Show)
 
--- | Creates a packet with appropiate size from a Channel and a ByteString
+-- | Creates a packet with appropriate size from a Channel and a ByteString
 makePacket :: Word16     -- ^ ID of the channel the packet should be sent on
            -> ByteString -- ^ The ByteString to be sent
            -> Packet     -- ^ Returns a sendable packet
