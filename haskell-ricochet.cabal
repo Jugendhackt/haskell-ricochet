@@ -21,6 +21,7 @@ library
                      , Network.Ricochet.Monad
                      , Network.Ricochet.Protocol.Lowest
                      , Network.Ricochet.Protocol.Protobuf
+                     , Network.Ricochet.Protocol.Protobuf.ControlChannel
                      , Network.Ricochet.Types
                      , Network.Ricochet.Util
                      , Network.Ricochet.Version
