@@ -1,3 +1,11 @@
+{-|
+  Module: Network.Ricochet.Util
+  Description: A collection of utility functions
+
+"Network.Ricochet.Util" contains a collection of utility functions used
+throughout the package.
+-}
+
 module Network.Ricochet.Util
   ( parserResult
   , anyWord16

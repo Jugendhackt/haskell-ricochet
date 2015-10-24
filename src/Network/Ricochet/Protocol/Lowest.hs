@@ -1,3 +1,11 @@
+{-|
+  Module:      Network.Ricochet.Protocol.Lowest
+  Description: Implementation of the low-level protocol parsing
+
+"Network.Ricochet.Protocol.Lowest" implements the parsing of the parts of the
+protocol which aren't described via Google Protobuf.
+-}
+
 {-# LANGUAGE TupleSections #-}
 module Network.Ricochet.Protocol.Lowest
   ( parsePacket

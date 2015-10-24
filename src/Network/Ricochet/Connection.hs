@@ -1,3 +1,11 @@
+{-|
+  Module:   Network.Ricochet.Connection
+  Description: Implementation of everything related to initiating 'Connection's
+
+"Network.Ricochet.Connection" implements the opening of 'Connection's as well
+as the first few steps of the protocol.
+-}
+
 {-# LANGUAGE OverloadedStrings #-}
 
 module Network.Ricochet.Connection

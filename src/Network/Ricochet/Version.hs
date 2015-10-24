@@ -1,3 +1,12 @@
+{-|
+  Module: Network.Ricochet.Version
+  Description: Implementation of the parser and dumper for 'Version's
+
+"Network.Ricochet.Version" contains the implementations of the parser and dumper
+for the version negotiation step of the protocol, as well as some related type
+definitions.
+-}
+
 {-# LANGUAGE OverloadedStrings #-}
 
 module Network.Ricochet.Version

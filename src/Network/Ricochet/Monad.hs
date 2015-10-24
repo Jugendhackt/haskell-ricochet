@@ -1,3 +1,11 @@
+{-|
+  Module:      Network.Ricochet.Monad
+  Description: Implementation of the 'Ricochet'-Monad
+
+"Network.Ricochet.Monad" contains the definition and implementation of the
+'Ricochet'-Monad, as well as some useful functions in it.
+-}
+
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TemplateHaskell            #-}

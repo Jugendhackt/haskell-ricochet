@@ -1,3 +1,11 @@
+{-|
+  Module:      Network.Ricochet.Types
+  Description: Most of the type and lens definitions
+
+"Network.Ricochet.Types" contains most of the definitions of the types and
+lenses used throughout the package.
+-}
+
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Network.Ricochet.Types where
