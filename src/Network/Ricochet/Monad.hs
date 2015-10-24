@@ -8,6 +8,7 @@ module Network.Ricochet.Monad
   , peekPacket, nextPacket
   , socksPort, versions
   , sendPacket, sendByteString
+  , closeConnection
   ) where
 
 import           Network.Ricochet.Protocol.Lowest
@@ -20,13 +21,14 @@ import           Control.Monad.IO.Class           (MonadIO (..))
 import           Control.Monad.State              (MonadState (..), StateT (..))
 import           Data.ByteString                  (ByteString ())
 import qualified Data.ByteString                  as B
+import           Data.List                        (delete)
 import           Data.Map                         (Map (), lookup, empty)
 import           Data.Monoid                      ((<>))
 import           Data.Word                        (Word8, Word16)
 import           Network                          (PortID (..))
 import           Network.Socket                   (Socket ())
 import           System.IO                        (BufferMode (..), Handle (),
-                                                   hSetBuffering)
+                                                   hSetBuffering, hClose)
 
 -- | The Ricochet Monad which allows all stateful network computations we need to do
 newtype Ricochet a = Ricochet { runRicochet :: StateT RicochetState IO a }
@@ -45,19 +47,23 @@ data RicochetState = MkRicochetState
 makeLenses ''RicochetState
 
 -- | Checks if a complete packet is available on the given connection, and if
--- so, reads and returns it.
+--   so, reads and returns it.
 peekPacket :: Connection -> Ricochet (Maybe Packet)
 peekPacket con = do
-  readBytes <- liftIO $ B.hGetNonBlocking (con ^. cHandle) max
+  readBytes <- liftIO $ B.hGetNonBlocking (con ^. cHandle) maxPacketSize
+  -- Append the read bytes to the input buffer
   inputBuffer <- con' . cInputBuffer <%= (<> readBytes)
+  -- Try parsing a full packet and return it on success
   case parsePacket inputBuffer of
     Success packet bs -> do
+      -- Removed the parsed portion from the inputBuffer
       -- FIXME: Should be: con' . cInputBuffer .= bs
       con' . cInputBuffer <%= (const bs)
       return $ Just packet
     Unfinished -> return Nothing
     Failure    -> return Nothing
-  where max = fromIntegral (maxBound :: Word16)
+  where maxPacketSize = fromIntegral (maxBound :: Word16)
+        -- The lens focusing on the connection in the RicochetState
         con' = connections . traversed . filtered (== con)
 
 -- | Waits for a complete packet to arrive and returns it
@@ -74,5 +80,14 @@ sendPacket :: Connection -> Packet -> Ricochet ()
 sendPacket con pkt = liftIO . B.hPutStr (con ^. cHandle) $ dumpPacket pkt
 
 -- | Packs a ByteString into Packets and sends it through the given Connection
-sendByteString :: Connection -> Word16 -> ByteString -> Ricochet ()
-sendByteString con chan bs = mapM_ (sendPacket con) $ splitInPackets chan bs
+sendByteString :: Connection -- ^ The Connection through which to send the ByteString
+               -> Word16     -- ^ The ID of the channel the ByteString should be send on
+               -> ByteString -- ^ The ByteString to be sent
+               -> Ricochet ()
+sendByteString con chan bs = mapM_ (sendPacket con) $ splitIntoPackets chan bs
+
+-- | Close a connection and remove it from the gg
+closeConnection :: Connection -> Ricochet ()
+closeConnection connection = do
+  connections %= delete connection
+  liftIO . hClose $ connection ^. cHandle

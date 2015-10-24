@@ -39,13 +39,17 @@ type Versions = Map Version ConnectionHandler
 parseIntroduction :: Versions -> ByteString -> ParserResult Versions
 parseIntroduction vers bs = parserResult . parse (introductionParser vers) $ bs
 
-introductionParser :: Map Version ConnectionHandler -> Parser (Map Version ConnectionHandler)
+-- | Creates a Parser for the introduction step of the protocol
+introductionParser :: Versions -> Parser (Map Version ConnectionHandler)
 introductionParser supportedVersions = do
   string "IM"
   nVersions <- anyWord8
   versions <- count (fromIntegral nVersions) anyWord8
+  -- Only return versions supported by this side of the connection
   return $ filterWithKey (\k _ -> k `elem` versions) supportedVersions
 
+-- | Dumps the introduction message
 dumpIntroduction :: Versions -> ByteString
-dumpIntroduction supportedVersions = "IM" <> B.singleton (fromIntegral . size $ supportedVersions :: Word8) <>
-  foldl (\s c -> s <> B.singleton c) "" (keys supportedVersions)
+dumpIntroduction supportedVersions = "IM" <> versionCount <> versions
+  where versionCount = B.singleton (fromIntegral . size $ supportedVersions :: Word8) 
+        versions     = foldl (\s c -> s <> B.singleton c) "" (keys supportedVersions)

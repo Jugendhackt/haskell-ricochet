@@ -17,7 +17,7 @@ import           Network                     hiding (connectTo)
 main = do
   state <- createState (PortNumber 9878)
   flip (runStateT . runRicochet) state $ do
-    versions %= (M.insert 1 (\_ -> return ()))
+    versions %= M.insert 1 (\_ -> return ())
     con <- awaitConnection
     forever $ do
       p <- nextPacket con

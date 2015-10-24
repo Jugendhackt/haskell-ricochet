@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Network.Ricochet.Types where
 
 import           Control.Lens
@@ -15,9 +16,11 @@ data Packet = MkPacket
   , _pPacketData :: ByteString
   } deriving (Show)
 
--- | Function creating a packet with appropiate size from a Channel and a ByteString
-makePacket :: Word16 -> ByteString -> Packet
-makePacket chan bs = MkPacket (4 + (fromIntegral $ B.length bs)) chan bs
+-- | Creates a packet with appropiate size from a Channel and a ByteString
+makePacket :: Word16     -- ^ ID of the channel the packet should be sent on
+           -> ByteString -- ^ The ByteString to be sent
+           -> Packet     -- ^ Returns a sendable packet
+makePacket chan bs = MkPacket (4 + fromIntegral (B.length bs)) chan bs
 
 -- | Representation of a connection between two ricochet users
 -- it consists of:
@@ -27,9 +30,14 @@ makePacket chan bs = MkPacket (4 + (fromIntegral $ B.length bs)) chan bs
 data Connection = MkConnection
   { _cHandle      :: Handle
   , _cChannels    :: [Channel]
-  , _cIsClient    :: Bool
   , _cInputBuffer :: ByteString
   }
+
+-- | Creates an initial 'Connection' from a Handle
+makeConnection :: Handle -> Connection
+makeConnection handle = -- Start out with only a Control Channel
+  let channels = [MkChannel 0 $ MkChannelType "im.ricochet.control-channel"]
+  in  MkConnection handle channels B.empty
 
 instance Eq Connection where
   a == b = _cHandle a == _cHandle b
