@@ -9,8 +9,6 @@ module Network.Ricochet.Protocol.Protobuf.ControlChannel
   , features_enabled
   , O.OpenChannel
   , O.channel_type
-  , client_cookie
-  , server_cookie
   , R.ChannelResult
   , R.opened
   , KeepAlive
@@ -23,12 +21,10 @@ import qualified Network.Ricochet.Protocol.Data.Control.ChannelResult as R
 import           Network.Ricochet.Protocol.Data.Control.KeepAlive
 import qualified Network.Ricochet.Protocol.Data.Control.EnableFeatures as E
 import qualified Network.Ricochet.Protocol.Data.Control.FeaturesEnabled as F
-import           Network.Ricochet.Protocol.Data.AuthHiddenService
 
 import           Control.Lens
 import           Control.Monad
 import           Data.ByteString                  (ByteString)
-import           Data.ByteString.Lens
 import           GHC.Int                          (Int32)
 import           Text.ProtocolBuffers
 
@@ -64,6 +60,3 @@ instance HasFeature E.EnableFeatures where
 
 instance HasFeature F.FeaturesEnabled where
   feature = F.feature
-
-client_cookie = _client_cookie
-server_cookie = _server_cookie
