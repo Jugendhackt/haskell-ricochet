@@ -17,12 +17,13 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     Network.Ricochet
-                     , Network.Ricochet.Types
-                     , Network.Ricochet.Protocol.Lowest
-                     , Network.Ricochet.Version
-                     , Network.Ricochet.Monad
                      , Network.Ricochet.Connection
+                     , Network.Ricochet.Monad
+                     , Network.Ricochet.Protocol.Lowest
+                     , Network.Ricochet.Protocol.Protobuf
+                     , Network.Ricochet.Types
                      , Network.Ricochet.Util
+                     , Network.Ricochet.Version
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base
