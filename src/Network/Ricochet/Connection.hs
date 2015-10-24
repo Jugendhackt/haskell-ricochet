@@ -61,9 +61,9 @@ initiateConnection :: Handle              -- ^ Handle corresponding to the conne
                    -> Ricochet Connection -- ^ Returns the finished 'Connection'
 initiateConnection handle role = do
   connection <- createConnection handle role
-  if role == Client
-    then offerVersions connection
-    else pickVersion connection
+  case role of
+    Client -> offerVersions connection
+    Server -> pickVersion connection
   return connection
 
 -- | Creates a new 'Connection' and adds it to the list of open Connections
