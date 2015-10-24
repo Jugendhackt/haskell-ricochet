@@ -36,7 +36,7 @@ awaitConnection :: Ricochet Connection
 awaitConnection = do
   sock <- use serverSocket
   (handle, _, _) <- liftIO $ accept sock
-  initiateConnection handle False
+  initiateConnection handle Server
 
 -- | Connects to a peer through the Tor network
 connectTo :: String              -- ^ Tor hidden service identifier to connect to
@@ -45,25 +45,26 @@ connectTo :: String              -- ^ Tor hidden service identifier to connect t
 connectTo domain port = do
   torPort <- use socksPort
   handle <- liftIO $ socksConnectTo "localhost" torPort domain port
-  initiateConnection handle False
+  initiateConnection handle Client
 
 -- | Initiate a newly made connection
 initiateConnection :: Handle              -- ^ Handle corresponding to the connection to the peer
-                   -> Bool                -- ^ Wether this side accepted the connection
+                   -> ConnectionRole      -- ^ The connection role of this side of the connection
                    -> Ricochet Connection -- ^ Returns the finished 'Connection'
-initiateConnection handle isClientSide = do
-  connection <- createConnection handle
-  if isClientSide
+initiateConnection handle role = do
+  connection <- createConnection handle role
+  if role == Client
     then offerVersions connection
     else pickVersion connection
   return connection
 
 -- | Creates a new 'Connection' and adds it to the list of open Connections
 createConnection :: Handle              -- ^ Handle corresponding to the connection to the peer
+                 -> ConnectionRole      -- ^ The connection role of this side of the connection
                  -> Ricochet Connection -- ^ Returns the finished 'Connection'
-createConnection handle = do
+createConnection handle role = do
   -- Create the actual connection structure
-  let connection = makeConnection handle
+  let connection = makeConnection handle role
   -- Disable buffering
   liftIO $ hSetBuffering handle NoBuffering
   -- Add it to the list of open Connections

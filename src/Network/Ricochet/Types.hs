@@ -22,22 +22,26 @@ makePacket :: Word16     -- ^ ID of the channel the packet should be sent on
            -> Packet     -- ^ Returns a sendable packet
 makePacket chan bs = MkPacket (4 + fromIntegral (B.length bs)) chan bs
 
+-- | The role of a peer in a Connection
+data ConnectionRole = Client | Server deriving (Eq, Show)
+
 -- | Representation of a connection between two ricochet users
 -- it consists of:
 --  - open channels
 --  - wether our ricochet instance is the client
 -- Equality is defined by equality of the socket
 data Connection = MkConnection
-  { _cHandle      :: Handle
-  , _cChannels    :: [Channel]
-  , _cInputBuffer :: ByteString
+  { _cHandle         :: Handle
+  , _cChannels       :: [Channel]
+  , _cInputBuffer    :: ByteString
+  , _cConnectionRole :: ConnectionRole
   }
 
 -- | Creates an initial 'Connection' from a Handle
-makeConnection :: Handle -> Connection
-makeConnection handle = -- Start out with only a Control Channel
+makeConnection :: Handle -> ConnectionRole -> Connection
+makeConnection handle role = -- Start out with only a Control Channel
   let channels = [MkChannel 0 $ MkChannelType "im.ricochet.control-channel"]
-  in  MkConnection handle channels B.empty
+  in  MkConnection handle channels B.empty role
 
 instance Eq Connection where
   a == b = _cHandle a == _cHandle b
