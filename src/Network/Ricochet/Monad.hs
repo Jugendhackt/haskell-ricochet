@@ -58,7 +58,7 @@ peekPacket con = do
     Success packet bs -> do
       -- Removed the parsed portion from the inputBuffer
       -- FIXME: Should be: con' . cInputBuffer .= bs
-      con' . cInputBuffer <%= (const bs)
+      con' . cInputBuffer <%= const bs
       return $ Just packet
     Unfinished -> return Nothing
     Failure    -> return Nothing
