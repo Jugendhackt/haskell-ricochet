@@ -11,9 +11,9 @@ import           System.IO       (Handle ())
 
 -- | Low level representation of a ricochet packet
 data Packet = MkPacket
-  { _pSize       :: Word16
-  , _pChannelID  :: Word16
-  , _pPacketData :: ByteString
+  { _pSize       :: Word16     -- ^ The size of the whole packet
+  , _pChannelID  :: Word16     -- ^ The channel the packet should be sent on
+  , _pPacketData :: ByteString -- ^ The actual packet payload
   } deriving (Show)
 
 -- | Creates a packet with appropriate size from a Channel and a ByteString
@@ -31,10 +31,10 @@ data ConnectionRole = Client | Server deriving (Eq, Show)
 --  - wether our ricochet instance is the client
 -- Equality is defined by equality of the socket
 data Connection = MkConnection
-  { _cHandle         :: Handle
-  , _cChannels       :: [Channel]
-  , _cInputBuffer    :: ByteString
-  , _cConnectionRole :: ConnectionRole
+  { _cHandle         :: Handle         -- ^ The handle to send and receive signals on
+  , _cChannels       :: [Channel]      -- ^ A list of the channels currently opened
+  , _cInputBuffer    :: ByteString     -- ^ Buffered data that has not been parsed yet
+  , _cConnectionRole :: ConnectionRole -- ^ The connection role of this side of the connection
   }
 
 -- | Creates an initial 'Connection' from a Handle
@@ -48,8 +48,8 @@ instance Eq Connection where
 
 -- | Low level representation of a ricochet channel
 data Channel = MkChannel
-  { _cChannelID   :: Word16
-  , _cChannelType :: ChannelType
+  { _cChannelID   :: Word16      -- ^ The ID of the channel
+  , _cChannelType :: ChannelType -- ^ The type of the channel
   }
 
 -- | The type of a channel is preliminarily represented by a ByteString for extensibility
@@ -57,8 +57,8 @@ data ChannelType = MkChannelType ByteString
 
 -- | A contact of our user, defined by his ID (TOR hidden service address without the .onion and the 'ricochet:' prefix) and his display name
 data Contact = MkContact
-  { _cName       :: String
-  , _cRicochetID :: String
+  { _cName       :: String -- ^ The name assigned to the contact
+  , _cRicochetID :: String -- ^ The ricochet ID of a user is their hidden service address without the ".onion"
   }
 
 -- | ParserResult holds the result of a parser in a way

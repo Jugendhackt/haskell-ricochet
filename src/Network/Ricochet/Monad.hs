@@ -37,11 +37,11 @@ newtype Ricochet a = Ricochet { runRicochet :: StateT RicochetState IO a }
 
 -- | RicochetState is the state necessary for Ricochet
 data RicochetState = MkRicochetState
-  { _serverSocket :: Socket
-  , _connections  :: [Connection]
-  , _contactList  :: [Contact]
-  , _socksPort    :: PortID
-  , _versions     :: Map Word8 (Connection -> Ricochet ())
+  { _serverSocket :: Socket                                -- ^ The socket listening for new peers
+  , _connections  :: [Connection]                          -- ^ A list of the current open connections
+  , _contactList  :: [Contact]                             -- ^ A list of known contacts
+  , _socksPort    :: PortID                                -- ^ The port of the local Tor SOCKS proxy
+  , _versions     :: Map Word8 (Connection -> Ricochet ()) -- ^ A map mapping version numbers to handlers
   }
 
 makeLenses ''RicochetState
