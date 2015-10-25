@@ -70,3 +70,5 @@ Please be friendly! The following things are not acceptable:
 * For bugs / errors supply…
 ** … the information how to reproduce
 ** … the error message
+* If you plan to resolve the issue, asign yourself to it.
+* You should use commits to automatically close issues (i. e. `Closes #<Issue Number>`)
