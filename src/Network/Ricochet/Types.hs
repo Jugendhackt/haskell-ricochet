@@ -33,7 +33,7 @@ makePacket chan bs = MkPacket (4 + fromIntegral (B.length bs)) chan bs
 -- | The role of a peer in a Connection
 data ConnectionRole = Client | Server deriving (Eq, Show)
 
--- | Representation of a connection between two ricochet users
+-- | Representation of a connection between two ricochet peers
 -- it consists of:
 --  - open channels
 --  - wether our ricochet instance is the client
@@ -66,7 +66,7 @@ data ChannelType = MkChannelType ByteString
 -- | A contact, defined by his ID (TOR hidden service address without the .onion and the 'ricochet:' prefix) and his display name
 data Contact = MkContact
   { _cName       :: String -- ^ The name assigned to the contact
-  , _cRicochetID :: String -- ^ The ricochet ID of a user is their hidden service address without the ".onion"
+  , _cRicochetID :: String -- ^ The ricochet ID of a contact is their hidden service address without the ".onion"
   }
 
 -- | ParserResult holds the result of a parser in a way

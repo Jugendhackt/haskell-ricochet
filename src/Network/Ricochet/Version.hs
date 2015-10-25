@@ -37,7 +37,7 @@ import           GHC.Word                   (Word8 ())
 -- | A Version is a Word8 as defined by the ricochet protocol
 type Version = Word8
 
--- | Handles a connection between two users
+-- | Handles a connection between two peers
 type ConnectionHandler = Connection -> Ricochet ()
 
 -- | Each version (Word8) has its own Handler that takes a Connection which has
