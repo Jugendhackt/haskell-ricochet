@@ -52,4 +52,21 @@ Please talk to the people! If everything is coordinated well, development will b
 These are the two communication channels we use:
 
 * Github issues for in depth discussion of concrete problems
-* IRC (`#jugendhackt` on freenode) for pretty much everything else (ranging from technical to more general to off-topic discussion)
+* IRC (`#paketmagie` on freenode) for pretty much everything else (ranging from technical to more general to off-topic discussion)
+
+Please be friendly! The following things are not acceptable:
+
+* Sexualized language
+* Personal attacks
+* Harassment
+* Racism, sexism or other forms of discrimination
+* Publishing of anyone's private information without their permission
+
+=== Issues
+
+* Formulate clear issue titles
+* Write clear and concise comments
+* Label issues if you are allowed to
+* For bugs / errors supply…
+** … the information how to reproduce
+** … the error message
