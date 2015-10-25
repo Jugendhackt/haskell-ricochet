@@ -52,7 +52,7 @@ Please talk to the people! If everything is coordinated well, development will b
 These are the two communication channels we use:
 
 * Github issues for in depth discussion of concrete problems
-* IRC (`#paketmagie` on freenode) for pretty much everything else (ranging from technical to more general to off-topic discussion)
+* IRC (`#ricochet` on freenode) for pretty much everything else (ranging from technical to more general to off-topic discussion)
 
 Please be friendly! The following things are not acceptable:
 
