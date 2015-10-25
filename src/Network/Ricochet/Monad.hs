@@ -1,3 +1,11 @@
+{-|
+  Module:      Network.Ricochet.Monad
+  Description: Implementation of the 'Ricochet'-Monad
+
+"Network.Ricochet.Monad" contains the definition and implementation of the
+'Ricochet'-Monad, as well as some useful functions in it.
+-}
+
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TemplateHaskell            #-}
@@ -37,11 +45,11 @@ newtype Ricochet a = Ricochet { runRicochet :: StateT RicochetState IO a }
 
 -- | RicochetState is the state necessary for Ricochet
 data RicochetState = MkRicochetState
-  { _serverSocket :: Socket
-  , _connections  :: [Connection]
-  , _contactList  :: [Contact]
-  , _socksPort    :: PortID
-  , _versions     :: Map Word8 (Connection -> Ricochet ())
+  { _serverSocket :: Socket                                -- ^ The socket listening for new peers
+  , _connections  :: [Connection]                          -- ^ A list of the current open connections
+  , _contactList  :: [Contact]                             -- ^ A list of known contacts
+  , _socksPort    :: PortID                                -- ^ The port of the local Tor SOCKS proxy
+  , _versions     :: Map Word8 (Connection -> Ricochet ()) -- ^ A map mapping version numbers to handlers
   }
 
 makeLenses ''RicochetState
@@ -56,7 +64,7 @@ peekPacket con = do
   -- Try parsing a full packet and return it on success
   case parsePacket inputBuffer of
     Success packet bs -> do
-      -- Removed the parsed portion from the inputBuffer
+      -- Remove the parsed portion from the inputBuffer
       -- FIXME: Should be: con' . cInputBuffer .= bs
       con' . cInputBuffer <%= const bs
       return $ Just packet
@@ -81,12 +89,12 @@ sendPacket con pkt = liftIO . B.hPutStr (con ^. cHandle) $ dumpPacket pkt
 
 -- | Packs a ByteString into Packets and sends it through the given Connection
 sendByteString :: Connection -- ^ The Connection through which to send the ByteString
-               -> Word16     -- ^ The ID of the channel the ByteString should be send on
+               -> Word16     -- ^ The ID of the channel the ByteString should be sent on
                -> ByteString -- ^ The ByteString to be sent
                -> Ricochet ()
 sendByteString con chan bs = mapM_ (sendPacket con) $ splitIntoPackets chan bs
 
--- | Close a connection and remove it from the gg
+-- | Closes a connection and removes it from the list of connections
 closeConnection :: Connection -> Ricochet ()
 closeConnection connection = do
   connections %= delete connection

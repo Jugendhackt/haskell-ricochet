@@ -1,3 +1,11 @@
+{-|
+  Module:      Network.Ricochet.Protocol.Lowest
+  Description: Implementation of the low-level protocol parsing
+
+"Network.Ricochet.Protocol.Lowest" implements the parsing of the parts of the
+protocol which aren't described via Google Protobuf.
+-}
+
 {-# LANGUAGE TupleSections #-}
 module Network.Ricochet.Protocol.Lowest
   ( parsePacket
@@ -49,8 +57,8 @@ splitIntoPackets chan bs = let (ps, bs') = splitIntoPackets' chan ([], bs)
 --   return the rest
 splitIntoPackets' :: Word16                 -- ^ ID of the channel the packets should be sent on
                   -> ([Packet], ByteString) -- ^ A tuple of the packets created so far and the
-                                            --   ByteString to conusme
-                  -> ([Packet], ByteString) -- ^ Rerturns a tuple of the packets created and a
+                                            --   ByteString to consume
+                  -> ([Packet], ByteString) -- ^ Returns a tuple of the packets created and a
                                             --   ByteString shorter than the maximal packet length
 splitIntoPackets' chan (ps, bs) =
     case (toInteger . B.length $ bs) `compare` toInteger maxPackLen of
