@@ -4,9 +4,9 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { cabal-install, mkDerivation, attoparsec, base, bytestring, containers
-      , hprotoc, lens, mtl, network, network-anonymous-tor, socks, stdenv
-      , transformers
+  f = { cabal-install, mkDerivation, attoparsec, base, base32string, bytestring
+      , containers , hprotoc, lens, mtl, network, network-anonymous-tor, socks
+      , stdenv, transformers
       }:
       mkDerivation {
         pname = "haskell-ricochet";
@@ -15,8 +15,8 @@ let
         isLibrary = true;
         isExecutable = true;
         libraryHaskellDepends = [ cabal-install
-          attoparsec base bytestring containers hprotoc lens mtl network
-          network-anonymous-tor socks transformers
+          attoparsec base base32string  bytestring containers hprotoc lens mtl
+          network network-anonymous-tor socks transformers
         ];
         executableHaskellDepends = [
           base bytestring containers lens mtl network
@@ -25,19 +25,24 @@ let
         license = stdenv.lib.licenses.gpl3;
       };
 
-  over = h: n: f: h.override (x: {overrides = (self: super: {"${n}" =
-  h.callPackage (import f) {};});});
-
 
   haskellPackages = if compiler == "default"
                       then pkgs.haskellPackages
                       else pkgs.haskell.packages.${compiler};
 
-  haskellPackages2 = over haskellPackages "protocol-buffers" ./protocol-buffers.nix;
-  haskellPackages3 = over haskellPackages2 "protocol-buffers-descriptor" ./protocol-buffers-descriptor.nix;
-  haskellPackages4 = over haskellPackages3 "hprotoc" ./hprotoc.nix;
+  over = h: { name, file }: h.override (x: {overrides = (self: super:
+        {"${name}" = h.callPackage (import file) {};});});
 
-  drv = haskellPackages4.callPackage f {};
+  entry = name : { inherit name; file = ./. + "/${name}.nix"; };
+
+  haskellPackages' = builtins.foldl' over haskellPackages [
+                      (entry "protocol-buffers")
+                      (entry "protocol-buffers-descriptor")
+                      (entry "hprotoc")
+                      (entry "network-anonymous-tor")
+                    ];
+
+  drv = haskellPackages'.callPackage f {};
 
 in
 
