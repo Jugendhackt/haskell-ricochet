@@ -22,6 +22,8 @@ library
                      , Network.Ricochet.Protocol.Lowest
                      , Network.Ricochet.Protocol.Protobuf
                      , Network.Ricochet.Protocol.Protobuf.AuthHiddenService
+                     , Network.Ricochet.Protocol.Protobuf.Chat
+                     , Network.Ricochet.Protocol.Protobuf.ContactRequest
                      , Network.Ricochet.Protocol.Protobuf.ControlChannel
                      , Network.Ricochet.Types
                      , Network.Ricochet.Util
