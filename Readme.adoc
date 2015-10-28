@@ -46,4 +46,4 @@ cabal repl    # for playing around
 == Get in touch!
 
 * …with the https://github.com/ricochet-im/ricochet#other[original ricochet-developers]
-* …with us: `#Jugendhackt` on Freenode
+* …with us: `#ricochet` on Freenode
