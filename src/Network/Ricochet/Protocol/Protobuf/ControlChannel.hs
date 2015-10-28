@@ -10,15 +10,15 @@ classes, and one Maybe layer is removed from the record members of 'CP.Packet'.
 module Network.Ricochet.Protocol.Protobuf.ControlChannel
   ( channel_identifier
   , feature
-  , CP.Packet
+  , CP.Packet (CP.Packet)
   , open_channel
   , channel_result
   , keep_alive
   , enable_features
   , features_enabled
-  , O.OpenChannel
+  , O.OpenChannel (O.OpenChannel)
   , O.channel_type
-  , R.ChannelResult
+  , R.ChannelResult (R.ChannelResult)
   , R.opened
   , KeepAlive
   , response_requested

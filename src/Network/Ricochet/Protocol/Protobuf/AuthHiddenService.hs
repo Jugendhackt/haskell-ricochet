@@ -10,13 +10,13 @@ members of 'AP.Packet'.
 module Network.Ricochet.Protocol.Protobuf.AuthHiddenService
   ( client_cookie
   , server_cookie
-  , AP.Packet
+  , AP.Packet (AP.Packet)
   , proof
   , result
-  , Proof
+  , Proof (Proof)
   , public_key
   , signature
-  , Result
+  , Result (Result)
   , accepted
   , is_known_contact
   ) where
