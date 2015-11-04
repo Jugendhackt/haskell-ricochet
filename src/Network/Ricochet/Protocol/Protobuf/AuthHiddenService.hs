@@ -3,7 +3,7 @@
   Description: AuthHiddenService.proto messages and their lenses
 
 These types and lenses are useful for dealing with packets sent in
-"im.ricochet.auth.hidden-service" channels.  They are used to prove ownership of
+@im.ricochet.auth.hidden-service@ channels.  They are used to prove ownership of
 a hidden service name by demonstrating ownership of a matching private key.
 This is used to authenticate as a known contact, or to prove ownership of a
 service name before sending a contact request.
@@ -56,7 +56,7 @@ result = AP.result . _Just
 
 -- | The public key corresponding to the hidden service the client wants to
 --   prove ownership of.  It has to be a DER-encoded 1024-bit RSA public key.
---   It will be used to calculate the "onion" address and verify the
+--   It will be used to calculate the @onion@ address and verify the
 --   'signature'.
 public_key :: Traversal' AO.Proof ByteString
 public_key = AO.public_key . _Just . strict
@@ -67,13 +67,13 @@ signature :: Traversal' AO.Proof ByteString
 signature = AO.signature . _Just . strict
 
 -- | Whether the public key was decoded and the signature verified successfully.
---   If this is true, the client has "im.ricochet.auth.hidden-service"
+--   If this is true, the client has @im.ricochet.auth.hidden-service@
 --   authentication.
 accepted :: Lens' AR.Result Bool
 accepted = AR.accepted
 
 -- | Whether the client is a known contact already.  This will only be true if
 --   'accepted' is already true.  In that case, the client has
---   "im.ricochet.auth.hidden-service" authentication as a known contact.
+--   @im.ricochet.auth.hidden-service@ authentication as a known contact.
 is_known_contact :: Lens' AR.Result (Maybe Bool)
 is_known_contact = AR.is_known_contact
