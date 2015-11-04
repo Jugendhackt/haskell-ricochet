@@ -18,7 +18,7 @@ import           Data.ByteString          (ByteString ())
 import           Text.ProtocolBuffers
 
 -- | Take an extension key and return a Traversal' that yields all the values to
--- that extension key
+--   that extension key
 ext :: (MonadPlus c, ExtKey c) => Key c msg v -> Traversal' msg (c v)
 ext k = lens ((^? _Right) . getExt k) (flip $ putExt k . maybe mzero id) . _Just
 
