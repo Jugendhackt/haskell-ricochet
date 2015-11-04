@@ -2,9 +2,8 @@
   Module:      Network.Ricochet.Protocol.Protobuf
   Description: Helper lenses for dealing with Protobuf messages
 
-"Network.Ricochet.Protocol.Protobuf" defines lenses that enable you to dump and
-parse Google Protobuf messages, and inspect their extension values, given the
-keys.
+"Network.Ricochet.Protocol.Protobuf" defines lenses that enable you to interact
+with 'Text.ProtocolBuffers' messages.  It’s not specific to this library.
 -}
 
 {-# LANGUAGE RankNTypes #-}
