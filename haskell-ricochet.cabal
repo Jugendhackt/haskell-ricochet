@@ -28,7 +28,25 @@ library
                      , Network.Ricochet.Types
                      , Network.Ricochet.Util
                      , Network.Ricochet.Version
-  -- other-modules:       
+  other-modules:       Network.Ricochet.Protocol.Data.AuthHiddenService
+                     , Network.Ricochet.Protocol.Data.AuthHiddenService.Packet
+                     , Network.Ricochet.Protocol.Data.AuthHiddenService.Proof
+                     , Network.Ricochet.Protocol.Data.AuthHiddenService.Result
+                     , Network.Ricochet.Protocol.Data.Chat.ChatAcknowledge
+                     , Network.Ricochet.Protocol.Data.Chat.ChatMessage
+                     , Network.Ricochet.Protocol.Data.Chat.Packet
+                     , Network.Ricochet.Protocol.Data.ContactRequest
+                     , Network.Ricochet.Protocol.Data.ContactRequest.ContactRequest
+                     , Network.Ricochet.Protocol.Data.ContactRequest.Limits
+                     , Network.Ricochet.Protocol.Data.ContactRequest.Response
+                     , Network.Ricochet.Protocol.Data.ContactRequest.Response.Status
+                     , Network.Ricochet.Protocol.Data.Control.ChannelResult
+                     , Network.Ricochet.Protocol.Data.Control.ChannelResult.CommonError
+                     , Network.Ricochet.Protocol.Data.Control.EnableFeatures
+                     , Network.Ricochet.Protocol.Data.Control.FeaturesEnabled
+                     , Network.Ricochet.Protocol.Data.Control.KeepAlive
+                     , Network.Ricochet.Protocol.Data.Control.OpenChannel
+                     , Network.Ricochet.Protocol.Data.Control.Packet
   -- other-extensions:    
   build-depends:       base
                      , network
