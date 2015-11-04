@@ -2,11 +2,11 @@
   Module:      Network.Ricochet.Protocol.Protobuf.AuthHiddenService
   Description: AuthHiddenService.proto messages and their lenses
 
-These types and lenses are useful for dealing with packets sent in
-@im.ricochet.auth.hidden-service@ channels.  They are used to prove ownership of
-a hidden service name by demonstrating ownership of a matching private key.
-This is used to authenticate as a known contact, or to prove ownership of a
-service name before sending a contact request.
+These types and lenses are useful for dealing with protobuf messages sent in
+relation with @im.ricochet.auth.hidden-service@ channels.  They are used to
+prove ownership of a hidden service name by demonstrating ownership of a
+matching private key.  This is used to authenticate as a known contact, or to
+prove ownership of a service name before sending a contact request.
 
 See <https://github.com/ricochet-im/ricochet/blob/master/doc/protocol.md#authhiddenservice ricochet’s protocol specification>.
 -}
