@@ -35,8 +35,9 @@ data ConnectionRole = Client | Server deriving (Eq, Show)
 
 -- | Representation of a connection between two ricochet peers
 --   it consists of:
---    - open channels
---    - wether our ricochet instance is the client
+--
+--    * open channels
+--    * wether our ricochet instance is the client
 data Connection = MkConnection
   { _cHandle         :: Handle         -- ^ The handle to send and receive signals on
   , _cChannels       :: [Channel]      -- ^ A list of the channels currently opened
