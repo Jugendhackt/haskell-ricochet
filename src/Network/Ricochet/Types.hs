@@ -34,9 +34,9 @@ makePacket chan bs = MkPacket (4 + fromIntegral (B.length bs)) chan bs
 data ConnectionRole = Client | Server deriving (Eq, Show)
 
 -- | Representation of a connection between two ricochet peers
--- it consists of:
---  - open channels
---  - wether our ricochet instance is the client
+--   it consists of:
+--    - open channels
+--    - wether our ricochet instance is the client
 data Connection = MkConnection
   { _cHandle         :: Handle         -- ^ The handle to send and receive signals on
   , _cChannels       :: [Channel]      -- ^ A list of the channels currently opened
@@ -70,7 +70,7 @@ data Contact = MkContact
   }
 
 -- | ParserResult holds the result of a parser in a way
--- that is nice to handle within our library.
+--   that is nice to handle within our library.
 data ParserResult a = Success a ByteString
                     | Unfinished
                     | Failure

@@ -25,7 +25,7 @@ joinWord8s :: Word8 -> Word8 -> Word16
 joinWord8s a b = (fromIntegral a `shiftL` 8) + fromIntegral b
 
 -- | Takes an attoparsec result and converts it
--- into a our representation.
+--   into a our representation.
 parserResult :: Result r -> ParserResult r
 parserResult (Done i r)  = Success r i
 parserResult (Partial _) = Unfinished
