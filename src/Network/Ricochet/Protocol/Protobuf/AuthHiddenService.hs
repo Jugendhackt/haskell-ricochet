@@ -29,6 +29,10 @@ import           Network.Ricochet.Protocol.Data.AuthHiddenService
 import qualified Network.Ricochet.Protocol.Data.AuthHiddenService.Packet as AP
 import qualified Network.Ricochet.Protocol.Data.AuthHiddenService.Proof  as AO
 import qualified Network.Ricochet.Protocol.Data.AuthHiddenService.Result as AR
+import           Network.Ricochet.Protocol.Data.Control.ChannelResult (ChannelResult)
+import           Network.Ricochet.Protocol.Data.Control.OpenChannel (OpenChannel)
+
+import           Network.Ricochet.Protocol.Protobuf (ext)
 
 import           Control.Lens
 import           Control.Monad
@@ -37,11 +41,13 @@ import           Text.ProtocolBuffers
 
 -- | The client’s part of the random string that will be used as an input to
 --   calculate the proof.
-client_cookie = _client_cookie
+client_cookie :: Traversal' OpenChannel ByteString
+client_cookie = ext _client_cookie . _Just . strict
 
 -- | The server’s part of the random string that will be used as an input to
 --   calculate the proof.
-server_cookie = _server_cookie
+server_cookie :: Traversal' ChannelResult ByteString
+server_cookie = ext _server_cookie . _Just . strict
 
 -- | If the 'AP.Packet' came from the client, it /must/ contain a 'Proof'.  It
 --   is used to prove the ownership of a hidden service to the server.

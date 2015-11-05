@@ -27,17 +27,23 @@ import qualified Network.Ricochet.Protocol.Data.ContactRequest.ContactRequest  a
 import           Network.Ricochet.Protocol.Data.ContactRequest.Limits
 import qualified Network.Ricochet.Protocol.Data.ContactRequest.Response        as R
 import qualified Network.Ricochet.Protocol.Data.ContactRequest.Response.Status as RS
+import           Network.Ricochet.Protocol.Data.Control.ChannelResult (ChannelResult)
+import           Network.Ricochet.Protocol.Data.Control.OpenChannel (OpenChannel)
+
+import           Network.Ricochet.Protocol.Protobuf (ext)
 
 import           Control.Lens
 import           Text.ProtocolBuffers
 
 -- | Request a hidden service @onion@ domain to be added to the recipient’s
 --   contact list.  This will usually prompt the recipient user.
-contact_request = CRE._contact_request
+contact_request :: Traversal' OpenChannel CR.ContactRequest
+contact_request = ext CRE._contact_request . _Just
 
 -- | Respond to a contact request, informing the recipient in what status the
 --   request is.
-response = CRE._response
+response :: Traversal' ChannelResult R.Response
+response = ext CRE._response . _Just
 
 -- | An optional nickname included in the contact request, that will be shown to
 --   the recipient user.  It is limited to 'nicknameMaxCharacters' characters.
