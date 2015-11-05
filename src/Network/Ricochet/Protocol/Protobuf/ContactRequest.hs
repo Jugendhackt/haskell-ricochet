@@ -30,9 +30,10 @@ import qualified Network.Ricochet.Protocol.Data.ContactRequest.Response.Status a
 import           Network.Ricochet.Protocol.Data.Control.ChannelResult (ChannelResult)
 import           Network.Ricochet.Protocol.Data.Control.OpenChannel (OpenChannel)
 
-import           Network.Ricochet.Protocol.Protobuf (ext)
+import           Network.Ricochet.Protocol.Protobuf (ext, utf8')
 
 import           Control.Lens
+import           Data.Text                        (Text)
 import           Text.ProtocolBuffers
 
 -- | Request a hidden service @onion@ domain to be added to the recipient’s
@@ -47,14 +48,14 @@ response = ext CRE._response . _Just
 
 -- | An optional nickname included in the contact request, that will be shown to
 --   the recipient user.  It is limited to 'nicknameMaxCharacters' characters.
-nickname :: Traversal' CR.ContactRequest Utf8
-nickname = CR.nickname . _Just
+nickname :: Traversal' CR.ContactRequest Text
+nickname = CR.nickname . _Just . utf8'
 
 -- | An optional message text included in the contact request, that will be
 --   shown to the recipient user.  It is limited to 'messageMaxCharacters'
 --   characters.
-message_text :: Traversal' CR.ContactRequest Utf8
-message_text = CR.message_text . _Just
+message_text :: Traversal' CR.ContactRequest Text
+message_text = CR.message_text . _Just . utf8'
 
 -- | The maximum amount of characters that is allowed in a nickname.  This value
 --   is specified in the protocol buffer specification files.

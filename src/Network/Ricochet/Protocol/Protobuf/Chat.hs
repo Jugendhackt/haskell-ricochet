@@ -24,7 +24,10 @@ import qualified Network.Ricochet.Protocol.Data.Chat.Packet as CP
 import qualified Network.Ricochet.Protocol.Data.Chat.ChatMessage as CM
 import qualified Network.Ricochet.Protocol.Data.Chat.ChatAcknowledge as CA
 
+import           Network.Ricochet.Protocol.Protobuf (utf8')
+
 import           Control.Lens
+import           Data.Text                        (Text)
 import           Data.Word                  (Word32)
 import           Data.Int                   (Int64)
 import           Text.ProtocolBuffers
@@ -60,8 +63,8 @@ instance HasMessageId CA.ChatAcknowledge where
 
 -- | The text in a message.  It should not exceed
 --   'Network.Ricochet.Protocol.Protobuf.ContactRequest.messageMaxCharacters'.
-message_text :: Lens' CM.ChatMessage Utf8
-message_text = CM.message_text
+message_text :: Traversal' CM.ChatMessage Text
+message_text = CM.message_text . utf8'
 
 -- | The time this message was stored until it was sent, negative.
 time_delta :: Traversal' CM.ChatMessage Int64

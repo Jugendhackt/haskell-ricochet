@@ -53,6 +53,7 @@ library
                      , mtl
                      , lens
                      , network-anonymous-tor
+                     , text
                      , transformers
                      , bytestring
                      , containers

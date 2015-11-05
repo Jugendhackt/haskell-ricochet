@@ -39,9 +39,12 @@ import qualified Network.Ricochet.Protocol.Data.Control.KeepAlive       as K
 import qualified Network.Ricochet.Protocol.Data.Control.EnableFeatures  as E
 import qualified Network.Ricochet.Protocol.Data.Control.FeaturesEnabled as F
 
+import           Network.Ricochet.Protocol.Protobuf (utf8')
+
 import           Control.Lens
 import           Control.Monad
 import           Data.ByteString                  (ByteString)
+import           Data.Text                        (Text)
 import           GHC.Int                          (Int32)
 import           Text.ProtocolBuffers
 
@@ -99,8 +102,8 @@ instance HasChannelIdentifier R.ChannelResult where
 --   format, e.g. @im.ricochet.chat@.  It specifies what kind of extensions to
 --   the 'O.OpenChannel' and 'R.ChannelResult' messages are allowed, and what
 --   kind of packets will be sent in the channel.
-channel_type :: Lens' O.OpenChannel Utf8
-channel_type = O.channel_type
+channel_type :: Traversal' O.OpenChannel Text
+channel_type = O.channel_type . utf8'
 
 -- | Whether the requested channel is now open and ready to receive packets.
 opened :: Lens' R.ChannelResult Bool
@@ -124,10 +127,10 @@ class HasFeature m where
   --   In the request, this is the list of features that one side of the
   --   connection wishes to enable.  In the response, this will be all of the
   --   features supported by the recipient of the request, that are now enabled.
-  feature :: Lens' m (Seq Utf8)
+  feature :: Traversal' m (Seq Text)
 
 instance HasFeature E.EnableFeatures where
-  feature = E.feature
+  feature = E.feature . below utf8'
 
 instance HasFeature F.FeaturesEnabled where
-  feature = F.feature
+  feature = F.feature . below utf8'
