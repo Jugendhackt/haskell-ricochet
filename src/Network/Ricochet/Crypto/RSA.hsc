@@ -86,5 +86,3 @@ fromDERPriv :: RSAKey k
                           --   'RSAKeyPair' because there’s sufficient
                           --   information for both.
 fromDERPriv = makeDecodeFun _fromDERPriv
-
--- vim: ft=haskell
