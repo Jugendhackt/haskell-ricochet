@@ -5,8 +5,8 @@ let
   inherit (nixpkgs) pkgs;
 
   f = { cabal-install, mkDerivation, attoparsec, base, base32string, bytestring
-      , containers , hprotoc, lens, mtl, network, network-anonymous-tor, socks
-      , stdenv, transformers
+      , containers, hprotoc, HsOpenSSL, lens, mtl, network
+      , network-anonymous-tor, socks, stdenv, transformers
       }:
       mkDerivation {
         pname = "haskell-ricochet";
@@ -15,8 +15,8 @@ let
         isLibrary = true;
         isExecutable = true;
         libraryHaskellDepends = [ cabal-install
-          attoparsec base base32string  bytestring containers hprotoc lens mtl
-          network network-anonymous-tor socks transformers
+          attoparsec base base32string bytestring containers hprotoc HsOpenSSL
+          lens mtl network network-anonymous-tor socks transformers
         ];
         executableHaskellDepends = [
           base bytestring containers lens mtl network
