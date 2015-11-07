@@ -32,27 +32,36 @@ import           GHC.Word                   (Word8)
 import           OpenSSL.RSA
 import           System.IO.Unsafe           (unsafePerformIO)
 
+type CDecodeFun = Ptr (Ptr RSA) -> Ptr CString -> CLong -> IO (Ptr RSA)
+type CEncodeFun = Ptr RSA -> Ptr (Ptr Word8) -> IO CInt
+
 foreign import ccall unsafe "d2i_RSAPublicKey"
-  _fromDERPub :: Ptr (Ptr RSA) -> Ptr CString -> CLong -> IO (Ptr RSA)
+  _fromDERPub :: CDecodeFun
 
 foreign import ccall unsafe "i2d_RSAPublicKey"
-  _toDERPub :: Ptr RSA -> Ptr (Ptr Word8) -> IO CInt
+  _toDERPub :: CEncodeFun
 
--- | Parse a public key from ASN.1 DER format
-fromDERPub :: ByteString -> Maybe RSAPubKey
-fromDERPub bs = unsafePerformIO . usingConvedBS $ \(csPtr, ci) -> do
-  rsaPtr <- _fromDERPub nullPtr csPtr ci
+makeDecodeFun :: RSAKey k => CDecodeFun -> ByteString -> Maybe k
+makeDecodeFun fun bs = unsafePerformIO . usingConvedBS $ \(csPtr, ci) -> do
+  rsaPtr <- fun nullPtr csPtr ci
   if rsaPtr == nullPtr then return Nothing else absorbRSAPtr rsaPtr
   where usingConvedBS io = B.useAsCStringLen bs $ \(cs, len) ->
           alloca $ \csPtr -> poke csPtr cs >> io (csPtr, fromIntegral len)
 
--- | Dump a public key to ASN.1 DER format
-toDERPub :: RSAKey k => k -> ByteString
-toDERPub k = unsafePerformIO $ do
+makeEncodeFun :: RSAKey k => CEncodeFun -> k -> ByteString
+makeEncodeFun fun k = unsafePerformIO $ do
   requiredSize <- withRSAPtr k $ flip _toDERPub nullPtr
   BI.createAndTrim (fromIntegral requiredSize) $ \ptr ->
     alloca $ \pptr ->
       (fromIntegral <$>) $ withRSAPtr k $ \key ->
-        poke pptr ptr >> _toDERPub key pptr
+        poke pptr ptr >> fun key pptr
+
+-- | Dump a public key to ASN.1 DER format
+toDERPub :: RSAKey k => k -> ByteString
+toDERPub = makeEncodeFun _toDERPub
+
+-- | Parse a public key from ASN.1 DER format
+fromDERPub :: ByteString -> Maybe RSAPubKey
+fromDERPub = makeDecodeFun _fromDERPub
 
 -- vim: ft=haskell
