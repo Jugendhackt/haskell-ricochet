@@ -11,6 +11,8 @@ accepted yet.
 module Network.Ricochet.Crypto.RSA
     ( fromDERPub
     , toDERPub
+    , fromDERPriv
+    , toDERPriv
     )
     where
 
@@ -41,6 +43,12 @@ foreign import ccall unsafe "d2i_RSAPublicKey"
 foreign import ccall unsafe "i2d_RSAPublicKey"
   _toDERPub :: CEncodeFun
 
+foreign import ccall unsafe "d2i_RSAPrivateKey"
+  _fromDERPriv :: CDecodeFun
+
+foreign import ccall unsafe "i2d_RSAPrivateKey"
+  _toDERPriv :: CEncodeFun
+
 makeDecodeFun :: RSAKey k => CDecodeFun -> ByteString -> Maybe k
 makeDecodeFun fun bs = unsafePerformIO . usingConvedBS $ \(csPtr, ci) -> do
   rsaPtr <- fun nullPtr csPtr ci
@@ -57,11 +65,26 @@ makeEncodeFun fun k = unsafePerformIO $ do
         poke pptr ptr >> fun key pptr
 
 -- | Dump a public key to ASN.1 DER format
-toDERPub :: RSAKey k => k -> ByteString
+toDERPub :: RSAKey k
+         => k          -- ^ You can pass either 'RSAPubKey' or 'RSAKeyPair'
+                       --   because both contain the necessary information.
+         -> ByteString -- ^ The public key information encoded in ASN.1 DER
 toDERPub = makeEncodeFun _toDERPub
 
 -- | Parse a public key from ASN.1 DER format
 fromDERPub :: ByteString -> Maybe RSAPubKey
 fromDERPub = makeDecodeFun _fromDERPub
+
+-- | Dump a private key to ASN.1 DER format
+toDERPriv :: RSAKeyPair -> ByteString
+toDERPriv = makeEncodeFun _toDERPriv
+
+-- | Parse a private key from ASN.1 DER format
+fromDERPriv :: RSAKey k
+            => ByteString -- ^ The private key information encoded in ASN.1 DER
+            -> Maybe k    -- ^ This can return either 'RSAPubKey' or
+                          --   'RSAKeyPair' because there’s sufficient
+                          --   information for both.
+fromDERPriv = makeDecodeFun _fromDERPriv
 
 -- vim: ft=haskell
