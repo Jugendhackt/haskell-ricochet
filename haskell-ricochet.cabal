@@ -49,6 +49,7 @@ library
                      , Network.Ricochet.Protocol.Data.Control.Packet
   -- other-extensions:    
   build-depends:       base
+                     , base32string
                      , network
                      , mtl
                      , lens
@@ -68,6 +69,7 @@ library
 executable server
   main-is:             src/Demo/Server.hs
   build-depends:       base
+                     , base32string
                      , mtl
                      , containers
                      , bytestring
@@ -79,6 +81,7 @@ executable server
 executable client
   main-is:             src/Demo/Client.hs
   build-depends:       base
+                     , base32string
                      , mtl
                      , containers
                      , bytestring
