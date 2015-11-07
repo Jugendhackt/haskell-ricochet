@@ -41,7 +41,7 @@ type Version = Word8
 type ConnectionHandler = Connection -> Ricochet ()
 
 -- | Each version (Word8) has its own Handler that takes a Connection which has
--- completed version negotiation and does Ricochet actions
+--   completed version negotiation and does Ricochet actions
 type Versions = Map Version ConnectionHandler
 
 -- | Parses Introduction and Version Negotiation of the protocol

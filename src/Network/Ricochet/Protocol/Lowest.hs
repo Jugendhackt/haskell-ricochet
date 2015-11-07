@@ -11,14 +11,16 @@ module Network.Ricochet.Protocol.Lowest
   ( parsePacket
   , dumpPacket
   , splitIntoPackets
+  , packet
   ) where
 
 import           Prelude                    hiding (take)
 
 import           Network.Ricochet.Types     (Packet (..), ParserResult (..),
-                                             makePacket)
+                                             makePacket, _Success)
 import           Network.Ricochet.Util
 
+import           Control.Lens
 import           Data.Attoparsec.ByteString
 import           Data.Bifunctor             (first)
 import           Data.ByteString            (ByteString ())
@@ -32,11 +34,11 @@ import           Data.Word                  (Word16, Word8)
 
 -- | Actually parses a packet.
 parsePacket :: ByteString -> ParserResult Packet
-parsePacket bs = parserResult . parse packet $ bs
+parsePacket bs = parserResult . parse packetParser $ bs
 
 -- | Parser for the low-level representation of a packet.
-packet :: Parser Packet
-packet = do
+packetParser :: Parser Packet
+packetParser = do
   size <- anyWord16
   channel <- anyWord16
   packetData <- take (fromIntegral size - 4)
@@ -45,6 +47,10 @@ packet = do
 -- | Serializes a Packet to yield it’s low-level representation
 dumpPacket :: Packet -> ByteString
 dumpPacket (MkPacket w1 w2 bs) = toStrict . toLazyByteString $ word16BE w1 <> word16BE w2 <> byteString bs
+
+-- | Prism for parsing and dumping a packet
+packet :: Prism' ByteString Packet
+packet = prism' dumpPacket ((^? _Success . _1) . parsePacket)
 
 -- | Split a ByteString into as many packets as necessary
 splitIntoPackets :: Word16      -- ^ ID of the channel the packets should be sent on

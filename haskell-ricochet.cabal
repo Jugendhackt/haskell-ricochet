@@ -17,25 +17,51 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     Network.Ricochet
-                     , Network.Ricochet.Types
-                     , Network.Ricochet.Protocol.Lowest
-                     , Network.Ricochet.Version
-                     , Network.Ricochet.Monad
                      , Network.Ricochet.Connection
+                     , Network.Ricochet.Monad
+                     , Network.Ricochet.Protocol.Lowest
+                     , Network.Ricochet.Protocol.Protobuf
+                     , Network.Ricochet.Protocol.Protobuf.AuthHiddenService
+                     , Network.Ricochet.Protocol.Protobuf.Chat
+                     , Network.Ricochet.Protocol.Protobuf.ContactRequest
+                     , Network.Ricochet.Protocol.Protobuf.ControlChannel
+                     , Network.Ricochet.Types
                      , Network.Ricochet.Util
-  -- other-modules:       
+                     , Network.Ricochet.Version
+  other-modules:       Network.Ricochet.Protocol.Data.AuthHiddenService
+                     , Network.Ricochet.Protocol.Data.AuthHiddenService.Packet
+                     , Network.Ricochet.Protocol.Data.AuthHiddenService.Proof
+                     , Network.Ricochet.Protocol.Data.AuthHiddenService.Result
+                     , Network.Ricochet.Protocol.Data.Chat.ChatAcknowledge
+                     , Network.Ricochet.Protocol.Data.Chat.ChatMessage
+                     , Network.Ricochet.Protocol.Data.Chat.Packet
+                     , Network.Ricochet.Protocol.Data.ContactRequest
+                     , Network.Ricochet.Protocol.Data.ContactRequest.ContactRequest
+                     , Network.Ricochet.Protocol.Data.ContactRequest.Limits
+                     , Network.Ricochet.Protocol.Data.ContactRequest.Response
+                     , Network.Ricochet.Protocol.Data.ContactRequest.Response.Status
+                     , Network.Ricochet.Protocol.Data.Control.ChannelResult
+                     , Network.Ricochet.Protocol.Data.Control.ChannelResult.CommonError
+                     , Network.Ricochet.Protocol.Data.Control.EnableFeatures
+                     , Network.Ricochet.Protocol.Data.Control.FeaturesEnabled
+                     , Network.Ricochet.Protocol.Data.Control.KeepAlive
+                     , Network.Ricochet.Protocol.Data.Control.OpenChannel
+                     , Network.Ricochet.Protocol.Data.Control.Packet
   -- other-extensions:    
   build-depends:       base
                      , network
                      , mtl
                      , lens
                      , network-anonymous-tor
+                     , text
                      , transformers
                      , bytestring
                      , containers
                      , attoparsec
                      , socks
                      , hprotoc
+                     , protocol-buffers
+                     , protocol-buffers-descriptor
   hs-source-dirs:      src
   default-language:    Haskell2010
 
