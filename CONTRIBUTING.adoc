@@ -63,6 +63,31 @@ Please be friendly! The following things are not acceptable:
 * Racism, sexism or other forms of discrimination
 * Publishing of anyone's private information without their permission
 
+=== Modules
+
+If you're adding dependencies to external modules from hackage, please make sure the version on the `unstable`-channel of the `nixpkgs` is new enough for your changes to compile.
+
+If that is not the case, you'll have to add a custom nix-expression.
+
+To do that, first generate the expression using the `cabal2nix`-tool and place it in the `nix/` folder of the repository.
+[source,bash]
+----
+# Other possible sources for the expression can be listed by running: cabal2nix --help
+cabal2nix cabal://package-name > nix/package-name.nix
+----
+
+Now, you'll have just to add it to the override fold in `shell.nix`:
+[source,nix]
+----
+let
+  haskellPackages' = builtins.foldl' over haskellPackages [
+                      # ...
+                      (entry "package-name")
+                      # ...
+                    ];
+in # ...
+----
+
 === Issues
 
 * Formulate clear issue titles
