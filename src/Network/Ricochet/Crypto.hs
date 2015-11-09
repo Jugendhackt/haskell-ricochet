@@ -9,17 +9,19 @@ elsewhere.
 -}
 
 module Network.Ricochet.Crypto
-  ( module Network.Ricochet.Crypto.RSA
-  , generate1024BitRSA
+  ( generate1024BitRSA
   , base64EncodePrivRSA
   , hmacSHA256
   , sign
   , verify
+  , publicDER
+  , privateDER
   )
 where
 
 import           Network.Ricochet.Crypto.RSA
 
+import           Control.Lens               (Prism', prism')
 import           Data.ByteString            (ByteString)
 import           Data.Maybe                 (fromJust)
 import           OpenSSL                    (withOpenSSL)
@@ -28,7 +30,8 @@ import           OpenSSL.EVP.Digest         (Digest, getDigestByName, hmacBS)
 import           OpenSSL.EVP.PKey           (KeyPair, PublicKey)
 import           OpenSSL.EVP.Sign           (signBS)
 import           OpenSSL.EVP.Verify         (VerifyStatus, verifyBS)
-import           OpenSSL.RSA                (RSAKeyPair, generateRSAKey')
+import           OpenSSL.RSA                (RSAKeyPair, RSAPubKey,
+                                             generateRSAKey')
 import           System.IO.Unsafe           (unsafePerformIO)
 
 -- | Generate a 1024 bit private RSA key.  The public exponent is 3.
@@ -63,3 +66,11 @@ verify :: PublicKey k
           -> ByteString   -- ^ The signature that is to be verified
           -> VerifyStatus -- ^ Whether the signature is valid or not
 verify key msg sig = unsafePerformIO $ verifyBS sha256 sig key msg
+
+-- | A Prism that allows ASN.1 DER encoding and decoding of RSA public keys
+publicDER :: Prism' ByteString RSAPubKey
+publicDER = prism' toDERPub fromDERPub
+
+-- | A Prism that allows ASN.1 DER encoding and decoding of RSA private keys
+privateDER :: Prism' ByteString RSAKeyPair
+privateDER = prism' toDERPriv fromDERPriv
