@@ -13,7 +13,7 @@ module Network.Ricochet.Crypto
   , generate1024BitRSA
   , base64EncodePrivRSA
   , hmacSHA256
-  , rsaSign
+  , sign
   )
 where
 
@@ -24,6 +24,7 @@ import           Data.Maybe                 (fromJust)
 import           OpenSSL                    (withOpenSSL)
 import           OpenSSL.EVP.Base64         (encodeBase64BS)
 import           OpenSSL.EVP.Digest         (Digest, getDigestByName, hmacBS)
+import           OpenSSL.EVP.PKey           (KeyPair)
 import           OpenSSL.EVP.Sign           (signBS)
 import           OpenSSL.RSA                (RSAKeyPair, generateRSAKey')
 import           System.IO.Unsafe           (unsafePerformIO)
@@ -46,6 +47,7 @@ hmacSHA256 :: ByteString -- ^ The (shared) secret key
            -> ByteString -- ^ The resulting HMAC signature
 hmacSHA256 key bs = hmacBS sha256 key bs
 
--- | Sign a ByteString using PKCS # 1 v2.0, using SHA256
-rsaSign :: RSAKeyPair -> ByteString -> ByteString
-rsaSign key bs = unsafePerformIO $ signBS sha256 key bs
+-- | Sign a ByteString using the algorithm corresponding to the passed KeyPair
+--   and SHA256.
+sign :: KeyPair k => k -> ByteString -> ByteString
+sign key bs = unsafePerformIO $ signBS sha256 key bs
