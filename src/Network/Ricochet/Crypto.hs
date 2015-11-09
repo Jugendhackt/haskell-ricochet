@@ -14,6 +14,7 @@ module Network.Ricochet.Crypto
   , base64EncodePrivRSA
   , hmacSHA256
   , sign
+  , verify
   )
 where
 
@@ -24,8 +25,9 @@ import           Data.Maybe                 (fromJust)
 import           OpenSSL                    (withOpenSSL)
 import           OpenSSL.EVP.Base64         (encodeBase64BS)
 import           OpenSSL.EVP.Digest         (Digest, getDigestByName, hmacBS)
-import           OpenSSL.EVP.PKey           (KeyPair)
+import           OpenSSL.EVP.PKey           (KeyPair, PublicKey)
 import           OpenSSL.EVP.Sign           (signBS)
+import           OpenSSL.EVP.Verify         (VerifyStatus, verifyBS)
 import           OpenSSL.RSA                (RSAKeyPair, generateRSAKey')
 import           System.IO.Unsafe           (unsafePerformIO)
 
@@ -51,3 +53,13 @@ hmacSHA256 key bs = hmacBS sha256 key bs
 --   and SHA256.
 sign :: KeyPair k => k -> ByteString -> ByteString
 sign key bs = unsafePerformIO $ signBS sha256 key bs
+
+-- | Verify a signature using the algorithm corresponding to the passed KeyPair
+--   and SHA256.
+verify :: PublicKey k
+          => k            -- ^ The public key (or keypair) that belongs to the
+                          --   private key used to sign the message
+          -> ByteString   -- ^ The message that was signed
+          -> ByteString   -- ^ The signature that is to be verified
+          -> VerifyStatus -- ^ Whether the signature is valid or not
+verify key msg sig = unsafePerformIO $ verifyBS sha256 sig key msg
