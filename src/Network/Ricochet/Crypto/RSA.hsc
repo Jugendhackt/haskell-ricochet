@@ -49,16 +49,26 @@ foreign import ccall unsafe "d2i_RSAPrivateKey"
 foreign import ccall unsafe "i2d_RSAPrivateKey"
   _toDERPriv :: CEncodeFun
 
+-- | Generate a function that decodes a key from ASN.1 DER format
 makeDecodeFun :: RSAKey k => CDecodeFun -> ByteString -> Maybe k
 makeDecodeFun fun bs = unsafePerformIO . usingConvedBS $ \(csPtr, ci) -> do
+  -- When you pass a null pointer to this function, it will allocate the memory
+  -- space required for the RSA key all by itself.  It will be freed whenever
+  -- the haskell object is garbage collected, as they are stored in ForeignPtrs
+  -- internally.
   rsaPtr <- fun nullPtr csPtr ci
   if rsaPtr == nullPtr then return Nothing else absorbRSAPtr rsaPtr
   where usingConvedBS io = B.useAsCStringLen bs $ \(cs, len) ->
           alloca $ \csPtr -> poke csPtr cs >> io (csPtr, fromIntegral len)
 
+-- | Generate a function that encodes a key in ASN.1 DER format
 makeEncodeFun :: RSAKey k => CEncodeFun -> k -> ByteString
 makeEncodeFun fun k = unsafePerformIO $ do
+  -- When you pass a null pointer to this function, it will only compute the
+  -- required buffer size.  See https://www.openssl.org/docs/faq.html#PROG3
   requiredSize <- withRSAPtr k $ flip fun nullPtr
+  -- It’s too sad BI.createAndTrim is considered internal, as it does a great
+  -- job here.  See https://hackage.haskell.org/package/bytestring-0.9.1.4/docs/Data-ByteString-Internal.html#v%3AcreateAndTrim
   BI.createAndTrim (fromIntegral requiredSize) $ \ptr ->
     alloca $ \pptr ->
       (fromIntegral <$>) $ withRSAPtr k $ \key ->
