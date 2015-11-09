@@ -58,7 +58,7 @@ makeDecodeFun fun bs = unsafePerformIO . usingConvedBS $ \(csPtr, ci) -> do
 
 makeEncodeFun :: RSAKey k => CEncodeFun -> k -> ByteString
 makeEncodeFun fun k = unsafePerformIO $ do
-  requiredSize <- withRSAPtr k $ flip _toDERPub nullPtr
+  requiredSize <- withRSAPtr k $ flip fun nullPtr
   BI.createAndTrim (fromIntegral requiredSize) $ \ptr ->
     alloca $ \pptr ->
       (fromIntegral <$>) $ withRSAPtr k $ \key ->
