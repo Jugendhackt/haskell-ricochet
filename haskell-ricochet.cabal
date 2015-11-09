@@ -18,6 +18,7 @@ cabal-version:       >=1.10
 library
   exposed-modules:     Network.Ricochet
                      , Network.Ricochet.Connection
+                     , Network.Ricochet.Crypto
                      , Network.Ricochet.Monad
                      , Network.Ricochet.Protocol.Lowest
                      , Network.Ricochet.Protocol.Protobuf
@@ -28,7 +29,8 @@ library
                      , Network.Ricochet.Types
                      , Network.Ricochet.Util
                      , Network.Ricochet.Version
-  other-modules:       Network.Ricochet.Protocol.Data.AuthHiddenService
+  other-modules:       Network.Ricochet.Crypto.RSA
+                     , Network.Ricochet.Protocol.Data.AuthHiddenService
                      , Network.Ricochet.Protocol.Data.AuthHiddenService.Packet
                      , Network.Ricochet.Protocol.Data.AuthHiddenService.Proof
                      , Network.Ricochet.Protocol.Data.AuthHiddenService.Result
@@ -50,6 +52,7 @@ library
   -- other-extensions:    
   build-depends:       base
                      , base32string
+                     , base64-bytestring
                      , network
                      , mtl
                      , lens
@@ -61,6 +64,7 @@ library
                      , attoparsec
                      , socks
                      , hprotoc
+                     , HsOpenSSL
                      , protocol-buffers
                      , protocol-buffers-descriptor
   hs-source-dirs:      src
