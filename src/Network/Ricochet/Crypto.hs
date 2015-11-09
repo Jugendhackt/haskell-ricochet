@@ -1,3 +1,4 @@
+{-# LANGUAGE NoMonomorphismRestriction #-}
 {-|
   Module:      Network.Ricochet.Crypto
   Description: Cryptographic primitives used internally by the library
@@ -16,12 +17,14 @@ module Network.Ricochet.Crypto
   , publicDER
   , privateDER
   , base64
+  , public
   )
 where
 
 import           Network.Ricochet.Crypto.RSA
 
-import           Control.Lens               (Prism', (^?), _Right, prism', to)
+import           Control.Lens               (Prism', Review, (^?), _Right,
+                                             prism', to, unto)
 import           Data.ByteString            (ByteString)
 import           Data.ByteString.Base64     (encode, decode)
 import           Data.Maybe                 (fromJust)
@@ -30,8 +33,8 @@ import           OpenSSL.EVP.Digest         (Digest, getDigestByName, hmacBS)
 import           OpenSSL.EVP.PKey           (KeyPair, PublicKey)
 import           OpenSSL.EVP.Sign           (signBS)
 import           OpenSSL.EVP.Verify         (VerifyStatus, verifyBS)
-import           OpenSSL.RSA                (RSAKeyPair, RSAPubKey,
-                                             generateRSAKey')
+import           OpenSSL.RSA                (RSAKey, RSAKeyPair, RSAPubKey,
+                                             generateRSAKey', rsaCopyPublic)
 import           System.IO.Unsafe           (unsafePerformIO)
 
 -- | Generate a 1024 bit private RSA key.  The public exponent is 3.
@@ -74,3 +77,7 @@ privateDER = prism' toDERPriv fromDERPriv
 -- | A Prism that allows Base64 encoding and decoding of ByteStrings
 base64 :: Prism' ByteString ByteString
 base64 = prism' encode (^? to decode . _Right)
+
+-- | This allows you to use an RSAKey where a RSAPubKey is required.
+public :: RSAKey k => Review RSAPubKey k
+public = unto $ unsafePerformIO . rsaCopyPublic
