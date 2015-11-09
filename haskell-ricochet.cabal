@@ -52,6 +52,7 @@ library
   -- other-extensions:    
   build-depends:       base
                      , base32string
+                     , base64-bytestring
                      , network
                      , mtl
                      , lens

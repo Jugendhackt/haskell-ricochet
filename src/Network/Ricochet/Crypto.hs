@@ -10,22 +10,22 @@ elsewhere.
 
 module Network.Ricochet.Crypto
   ( generate1024BitRSA
-  , base64EncodePrivRSA
   , hmacSHA256
   , sign
   , verify
   , publicDER
   , privateDER
+  , base64
   )
 where
 
 import           Network.Ricochet.Crypto.RSA
 
-import           Control.Lens               (Prism', prism')
+import           Control.Lens               (Prism', (^?), _Right, prism', to)
 import           Data.ByteString            (ByteString)
+import           Data.ByteString.Base64     (encode, decode)
 import           Data.Maybe                 (fromJust)
 import           OpenSSL                    (withOpenSSL)
-import           OpenSSL.EVP.Base64         (encodeBase64BS)
 import           OpenSSL.EVP.Digest         (Digest, getDigestByName, hmacBS)
 import           OpenSSL.EVP.PKey           (KeyPair, PublicKey)
 import           OpenSSL.EVP.Sign           (signBS)
@@ -37,10 +37,6 @@ import           System.IO.Unsafe           (unsafePerformIO)
 -- | Generate a 1024 bit private RSA key.  The public exponent is 3.
 generate1024BitRSA :: IO RSAKeyPair
 generate1024BitRSA = generateRSAKey' 1024 3
-
--- | Encode a private RSA key in DER and then Base64
-base64EncodePrivRSA :: RSAKeyPair -> ByteString
-base64EncodePrivRSA = encodeBase64BS . toDERPriv
 
 -- | The SHA256 Hash algorithm
 sha256 :: Digest
@@ -74,3 +70,7 @@ publicDER = prism' toDERPub fromDERPub
 -- | A Prism that allows ASN.1 DER encoding and decoding of RSA private keys
 privateDER :: Prism' ByteString RSAKeyPair
 privateDER = prism' toDERPriv fromDERPriv
+
+-- | A Prism that allows Base64 encoding and decoding of ByteStrings
+base64 :: Prism' ByteString ByteString
+base64 = prism' encode (^? to decode . _Right)
