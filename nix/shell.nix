@@ -5,9 +5,9 @@ let
   inherit (nixpkgs) pkgs;
 
   f = { cabal-install, mkDerivation, attoparsec, base, base32-bytestring
-      , base32string , base64-bytestring, bytestring , containers, hprotoc
+      , base32string, base64-bytestring, bytestring , containers, hprotoc
       , HsOpenSSL, lens , mtl, network , network-anonymous-tor, socks, stdenv
-      , transformers
+      , transformers, tasty
       }:
       mkDerivation {
         pname = "haskell-ricochet";
@@ -22,6 +22,9 @@ let
         ];
         executableHaskellDepends = [
           base bytestring containers lens mtl network
+        ];
+        testHaskellDepends = [
+          tasty
         ];
         description = "ricochet reimplementation in Haskell";
         license = stdenv.lib.licenses.gpl3;
