@@ -89,9 +89,30 @@ executable client
   default-language:    Haskell2010
 
 test-suite tests
-  type:              exitcode-stdio-1.0
-  main-is:           Main.hs
+  type:                exitcode-stdio-1.0
+  main-is:             Main.hs
+  other-modules:       Network.Ricochet.Testing.Instances
+                     , Network.Ricochet.Testing.Crypto
   build-depends:       base
+                     , base32string
+                     , base64-bytestring
+                     , network
+                     , mtl
+                     , lens
+                     , network-anonymous-tor
+                     , text
+                     , transformers
+                     , bytestring
+                     , containers
+                     , attoparsec
+                     , socks
+                     , hprotoc
+                     , HsOpenSSL
+                     , protocol-buffers
+                     , protocol-buffers-descriptor
+                     , haskell-ricochet
                      , tasty
-  default-language:  Haskell2010
-  hs-source-dirs:    test
+                     , QuickCheck
+                     , tasty-quickcheck
+  default-language:    Haskell2010
+  hs-source-dirs:      test
