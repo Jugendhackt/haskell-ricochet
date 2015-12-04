@@ -51,28 +51,28 @@ import           Text.ProtocolBuffers             (Seq)
 
 -- | A request to to open an additional channel.  The receiver should check its
 --   validity and reply with a 'R.ChannelResult' message.
-open_channel :: Traversal' CP.Packet O.OpenChannel
-open_channel = CP.open_channel . _Just
+open_channel :: Lens' CP.Packet (Maybe O.OpenChannel)
+open_channel = CP.open_channel
 
 -- | Response to an 'O.OpenChannel' message, telling the receiver whether the
 --   channel is ready for use, or what has gone wrong.
-channel_result :: Traversal' CP.Packet R.ChannelResult
-channel_result = CP.channel_result . _Just
+channel_result :: Lens' CP.Packet (Maybe R.ChannelResult)
+channel_result = CP.channel_result
 
 -- | A ping/pong message. This can be used to ping the remote side, ie. to find
 --   out how much latency the connection has.
-keep_alive :: Traversal' CP.Packet K.KeepAlive
-keep_alive = CP.keep_alive . _Just
+keep_alive :: Lens' CP.Packet (Maybe K.KeepAlive)
+keep_alive = CP.keep_alive
 
 -- | Request to activate protocol extension features.  The remote side has to
 --   respond with a 'F.FeaturesEnabled' message.
-enable_features :: Traversal' CP.Packet E.EnableFeatures
-enable_features = CP.enable_features . _Just
+enable_features :: Lens' CP.Packet (Maybe E.EnableFeatures)
+enable_features = CP.enable_features
 
 -- | Response to an 'E.EnableFeatures' message, telling the receiver which of
 --   the requested features have been enabled.
-features_enabled :: Traversal' CP.Packet F.FeaturesEnabled
-features_enabled = CP.features_enabled . _Just
+features_enabled :: Lens' CP.Packet (Maybe F.FeaturesEnabled)
+features_enabled = CP.features_enabled
 
 class HasChannelIdentifier m where
   -- | We use the typeclass 'HasChannelIdentifier' because both 'O.OpenChannel'
@@ -111,8 +111,8 @@ opened :: Lens' R.ChannelResult Bool
 opened = R.opened
 
 -- | The error code that describes why the channel cannot be opened.
-common_error :: Traversal' R.ChannelResult CE.CommonError
-common_error = R.common_error . _Just
+common_error :: Lens' R.ChannelResult (Maybe CE.CommonError)
+common_error = R.common_error
 
 -- | Whether this ping should be answered with a pong.  In other words, the
 --   remote side will reply to a 'K.KeepAlive' message with 'response_requested'
