@@ -13,6 +13,8 @@ module Network.Ricochet.Crypto.RSA
     , toDERPub
     , fromDERPriv
     , toDERPriv
+    , rawRSASign
+    , rawRSAVerify
     )
     where
 
@@ -27,10 +29,11 @@ import           Foreign.ForeignPtr         (ForeignPtr, finalizeForeignPtr,
 import           Foreign.Ptr                (FunPtr, Ptr, freeHaskellFunPtr,
                                              nullFunPtr, nullPtr)
 import           Foreign.C.String           (CString)
-import           Foreign.C.Types            (CLong(..), CInt(..))
+import           Foreign.C.Types            (CLong(..), CInt(..), CUInt(..))
 import           Foreign.Marshal.Alloc      (alloca)
-import           Foreign.Storable           (poke)
+import           Foreign.Storable           (peek, poke)
 import           GHC.Word                   (Word8)
+import           OpenSSL.EVP.Verify         (VerifyStatus(..))
 import           OpenSSL.RSA                (RSA, RSAKey, RSAKeyPair, RSAPubKey,
                                              absorbRSAPtr, rsaSize, withRSAPtr)
 import           System.IO.Unsafe           (unsafePerformIO)
@@ -72,7 +75,7 @@ makeEncodeFun fun k = unsafePerformIO $ do
   -- job here.  See https://hackage.haskell.org/package/bytestring-0.9.1.4/docs/Data-ByteString-Internal.html#v%3AcreateAndTrim
   BI.createAndTrim (fromIntegral requiredSize) $ \ptr ->
     alloca $ \pptr ->
-      (fromIntegral <$>) $ withRSAPtr k $ \key ->
+      (fromIntegral <$>) . withRSAPtr k $ \key ->
         poke pptr ptr >> fun key pptr
 
 -- | Dump a public key to ASN.1 DER format
@@ -97,3 +100,37 @@ fromDERPriv :: RSAKey k
                           --   'RSAKeyPair' because there’s sufficient
                           --   information for both.
 fromDERPriv = makeDecodeFun _fromDERPriv
+
+foreign import ccall unsafe "RSA_sign"
+  _rsa_sign :: CInt -> CString -> CUInt -> Ptr Word8 -> Ptr CUInt -> Ptr RSA -> IO CInt
+
+foreign import ccall unsafe "RSA_verify"
+  _rsa_verify :: CInt -> CString -> CUInt -> CString -> CUInt -> Ptr RSA -> IO CInt
+
+_nid_sha256 :: CInt
+_nid_sha256 = #const NID_sha256
+
+-- | Sign a hash digest using the given RSA key, assuming the digest was
+--   produced with sha256.
+rawRSASign :: RSAKeyPair -> ByteString -> ByteString
+rawRSASign k bs = unsafePerformIO $ do
+  -- The signature is of the same length as the key modulus
+  let requiredSize = rsaSize k
+  BI.createAndTrim (fromIntegral requiredSize) $ \ptr ->
+    (fromIntegral <$>) . alloca $ \iptr ->
+      B.useAsCStringLen bs $ \(cs, len) ->
+        withRSAPtr k $ \key ->
+          poke iptr 0 >>
+            _rsa_sign _nid_sha256 cs (fromIntegral len) ptr iptr key >>
+              peek iptr
+
+-- | Verify that a signature was created using the given hash digest and the
+--   given RSA key, assuming the digest was produced with sha256.
+rawRSAVerify :: RSAKey k => k -> ByteString -> ByteString -> VerifyStatus
+rawRSAVerify k dig sig = toVerifyStatus . (== 1) . unsafePerformIO $ do
+  withRSAPtr k $ \key ->
+    B.useAsCStringLen dig $ \(cdig, dlen) ->
+      B.useAsCStringLen sig $ \(csig, slen) ->
+        _rsa_verify _nid_sha256 cdig (fromIntegral dlen) csig (fromIntegral slen) key
+  where toVerifyStatus True = VerifySuccess
+        toVerifyStatus False = VerifyFailure
