@@ -16,10 +16,10 @@ import           Data.Monoid                 ((<>))
 import           Network                     hiding (accept, connectTo)
 
 main =
-  startRicochet (PortNumber 9878) Nothing (PortNumber 9051) [] (PortNumber 9050) [(1, handler)]
-    (\addr -> do
-      liftIO . print $ addr
-      void awaitConnection)
+  startRicochet (PortNumber 9878) Nothing (PortNumber 9051) [] (PortNumber 9050) [(1, handler)] $ do
+    addr <- use hiddenDomain
+    liftIO . print $ addr
+    void awaitConnection
 
 handler con =
   forever $ do

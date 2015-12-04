@@ -11,8 +11,7 @@ import Network.Ricochet.Util
 import Network.Ricochet.Version
 
 import           Data.Map                         (fromList)
-import           Data.Base32String.Default        (Base32String, fromBinary,
-                                                   toText)
+import           Data.Base32String.Default        (toText)
 import           Data.ByteString                  (ByteString)
 import           Data.Text                        (toLower)
 import           Data.Text.Encoding               (encodeUtf8)
@@ -36,8 +35,7 @@ startRicochet :: PortID           -- ^ Port to listen on
               -> PortID           -- ^ The port of the Tor SOCKS5 proxy
               -> [(Word8, Connection -> Ricochet ())] -- ^ A list of version identifiers and their
                                                       --   corresponding 'Connection' handlers
-              -> (Base32String -> Ricochet ()) -- ^ The action will be supplied the address of the
-                                               --   hidden service
+              -> Ricochet ()
               -> IO ()
 -- Convert the lPort to a PortNumber, if it's a service
 startRicochet (Service s) key ctrlPort contacts socksPort versions action = do
@@ -52,8 +50,8 @@ startRicochet lPort@(PortNumber listenPort) key (PortNumber ctrlPort) contacts s
       ctrlInt   = fromIntegral ctrlPort
   listenSock <- listenOn lPort
   void . withSession ctrlInt $ \ctrlSock -> do
-    address <- mapOnion ctrlSock listenInt listenInt False key
-    startRicochet' listenSock contacts socksPort versions . action $ address
+    address <- encodeUtf8 . toLower . toText <$> mapOnion ctrlSock listenInt listenInt False key
+    startRicochet' listenSock address contacts socksPort versions action
 startRicochet _ _ _ _ _ _ _ = error "Unfortunately, startRicochet doesn't support UNIX sockets"
 
 -- | Start an action inside the Ricochet monad.
@@ -62,14 +60,15 @@ startRicochet _ _ _ _ _ _ _ = error "Unfortunately, startRicochet doesn't suppor
 --   hidden service via the torrc or some other method.
 --
 --   DON'T use this function if that's not the case.
-startRicochet' :: Socket   -- ^ Socket to listen on
-              -> [Contact] -- ^ A list of known contacts
-              -> PortID    -- ^ The port of the Tor SOCKS5 proxy
+startRicochet' :: Socket      -- ^ Socket to listen on
+              -> ByteString   -- ^ Domain of the already configured hidden service
+              -> [Contact]    -- ^ A list of known contacts
+              -> PortID       -- ^ The port of the Tor SOCKS5 proxy
               -> [(Word8, Connection -> Ricochet ())] -- ^ A list of version identifiers and their
                                                       --   corresponding 'Connection' handlers
-              -> Ricochet () -- ^ The action to execute
+              -> Ricochet ()  -- ^ The action to execute
               -> IO ()
-startRicochet' sock contacts soxPort versions action =
+startRicochet' sock address contacts soxPort versions action =
   let versions' = fromList versions
-      state     = MkRicochetState sock [] contacts soxPort versions'
+      state     = MkRicochetState sock address [] contacts soxPort versions'
   in flip evalStateT state . runRicochet $ action

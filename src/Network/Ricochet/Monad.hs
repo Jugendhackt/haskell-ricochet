@@ -13,11 +13,11 @@
 module Network.Ricochet.Monad
   ( Ricochet (..)
   , RicochetState (..)
-  , serverSocket, connections
-  , peekPacket, nextPacket
-  , socksPort, versions
-  , sendPacket, sendByteString
-  , closeConnection
+  , serverSocket, hiddenDomain
+  , connections, peekPacket
+  , nextPacket, socksPort
+  , versions, sendPacket
+  , sendByteString, closeConnection
   ) where
 
 import           Network.Ricochet.Protocol.Lowest
@@ -49,6 +49,7 @@ newtype Ricochet a = Ricochet { runRicochet :: StateT RicochetState IO a }
 -- | RicochetState is the state necessary for Ricochet
 data RicochetState = MkRicochetState
   { _serverSocket :: Socket                                -- ^ The socket listening for new peers
+  , _hiddenDomain :: ByteString                            -- ^ The domain of our hidden service
   , _connections  :: [Connection]                          -- ^ A list of the current open connections
   , _contactList  :: [Contact]                             -- ^ A list of known contacts
   , _socksPort    :: PortID                                -- ^ The port of the local Tor SOCKS proxy
