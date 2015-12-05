@@ -68,11 +68,18 @@ data Channel = MkChannel
 -- | The type of a channel is preliminarily represented by a ByteString for extensibility
 data ChannelType = MkChannelType Text
 
--- | A contact, defined by his ID (TOR hidden service address without the .onion and the 'ricochet:' prefix) and his display name
+-- | A contact, defined by his ID (Tor hidden service address without the .onion and the 'ricochet:' prefix) and his display name
 data Contact = MkContact
-  { _cName       :: String -- ^ The name assigned to the contact
-  , _cRicochetID :: String -- ^ The ricochet ID of a contact is their hidden service address without the ".onion"
+  { _cName       :: String          -- ^ The name assigned to the contact
+  , _cRicochetID :: String          -- ^ The ricochet ID of a contact is their hidden service address without the ".onion"
+  , _cApproval   :: ContactApproval -- ^ To what extent this contact is approved on both sides
   }
+
+-- | The contact request stage of a contact
+data ContactApproval = KnownContact
+                     | BlockedContact
+                     | WeRequestedContact
+                     | TheyRequestedContact
 
 -- | ParserResult holds the result of a parser in a way
 --   that is nice to handle within our library.
@@ -84,4 +91,5 @@ makeLenses ''Packet
 makeLenses ''Connection
 makeLenses ''Channel
 makeLenses ''Contact
+makeLenses ''ContactApproval
 makePrisms ''ParserResult
