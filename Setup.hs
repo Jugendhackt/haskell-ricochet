@@ -1,8 +1,11 @@
 import           Distribution.Simple
 
-import           Control.Applicative ((<$>))
-import           Data.Monoid         ((<>))
-import           System.Process      (callProcess)
+import           Control.Applicative         ((<$>))
+import           Control.Monad               (liftM2)
+import           Control.Monad.Reader        (ReaderT(..))
+import           Data.Function               (on)
+import           Data.Monoid                 ((<>))
+import           System.Process              (callProcess)
 
 runHprotoc = callProcess "hprotoc"
   [ "--haskell_out=src"
@@ -18,11 +21,8 @@ runHprotoc = callProcess "hprotoc"
 preConfHook = preConf simpleUserHooks `combine` const (const (runHprotoc >> return mempty))
 main = defaultMainWithHooks $ simpleUserHooks { preConf = preConfHook }
 
-uncurry2 :: (((a, b) -> c) -> ((a1, b1) -> c1) -> d) -> (a -> b -> c) -> (a1 -> b1 -> c1) -> d
-uncurry2 = flip (.) uncurry . flip . flip (.) uncurry . flip
-
-combine' :: (Monad m, Monoid b) => (a -> m b) -> (a -> m b) -> a -> m b
-combine' f g x = f x >>= \rf -> g x >>= \rg -> return $ rf <> rg
+combine' :: (Monad m, Monoid b) => (a -> m b) -> (a -> m b) -> (a -> m b)
+combine' = (fmap runReaderT . liftM2 (<>)) `on` ReaderT
 
 combine :: (Monad m, Monoid c) => (a -> b -> m c) -> (a -> b -> m c) -> a -> b -> m c
-combine = fmap curry <$> uncurry2 combine'
+combine = fmap curry <$> combine' `on` uncurry
