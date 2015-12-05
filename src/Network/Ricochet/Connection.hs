@@ -9,8 +9,7 @@ as the first few steps of the protocol.
 {-# LANGUAGE OverloadedStrings #-}
 
 module Network.Ricochet.Connection
-  ( createState
-  , awaitConnection
+  ( awaitConnection
   , connectTo
   ) where
 
@@ -32,12 +31,6 @@ import           Network                  (PortID (..), accept, listenOn)
 import           Network.Socks5           (socksConnectTo)
 import           System.IO                (BufferMode (..), Handle (),
                                            hSetBuffering)
-
--- | Creates a new RicochetState listening on the supplied port
-createState :: PortID -> IO RicochetState
-createState port = do
-  sock <- listenOn port
-  return $ MkRicochetState sock [] [] (PortNumber 9050) M.empty
 
 -- | Waits until a new peer connects to initiate a connection
 awaitConnection :: Ricochet Connection
