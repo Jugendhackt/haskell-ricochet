@@ -48,7 +48,8 @@ connectTo domain port = do
   handle <- liftIO $ socksConnectTo "localhost" torPort domain port
   initiateConnection handle Client
 
--- | Initiate a newly made connection
+-- | Initiate a newly made connection.  This includes the version negotiation
+--   and running the corresponding version handler
 initiateConnection :: Handle              -- ^ Handle corresponding to the connection to the peer
                    -> ConnectionRole      -- ^ The connection role of this side of the connection
                    -> Ricochet Connection -- ^ Returns the finished 'Connection'
