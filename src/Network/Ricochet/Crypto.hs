@@ -20,6 +20,7 @@ module Network.Ricochet.Crypto
   , base64
   , public
   , torDomain
+  , module Network.Ricochet.Crypto.RSA
   )
 where
 
