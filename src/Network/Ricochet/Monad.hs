@@ -9,6 +9,7 @@
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE NoMonomorphismRestriction  #-}
 module Network.Ricochet.Monad
   ( Ricochet (..)
   , RicochetState (..)
@@ -21,6 +22,7 @@ module Network.Ricochet.Monad
 
 import           Network.Ricochet.Protocol.Lowest
 import           Network.Ricochet.Types
+import           Network.Ricochet.Util
 
 import           Control.Applicative              (Applicative (..))
 import           Control.Concurrent               (threadDelay)
@@ -71,8 +73,8 @@ peekPacket con = do
     Unfinished -> return Nothing
     Failure    -> return Nothing
   where maxPacketSize = fromIntegral (maxBound :: Word16)
-        -- The lens focusing on the connection in the RicochetState
-        con' = connections . traversed . filtered (== con)
+        con'          = connections . look con
+        chan' p       = con' . cChannels . lookWith cChannelID (p ^. pChannelID)
 
 -- | Waits for a complete packet to arrive and returns it
 nextPacket :: Connection -> Ricochet Packet

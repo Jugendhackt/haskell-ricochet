@@ -78,5 +78,6 @@ data ParserResult a = Success a ByteString
 
 makeLenses ''Packet
 makeLenses ''Connection
+makeLenses ''Channel
 makeLenses ''Contact
 makePrisms ''ParserResult
