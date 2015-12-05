@@ -18,9 +18,9 @@ module Network.Ricochet.Protocol.Protobuf.ControlChannel
   , enable_features
   , features_enabled
   , channel_identifier
-  , O.OpenChannel (O.OpenChannel)
+  , O.OpenChannel
   , channel_type
-  , R.ChannelResult (R.ChannelResult)
+  , R.ChannelResult
   , opened
   , common_error
   , CE.CommonError (..)
@@ -39,14 +39,14 @@ import qualified Network.Ricochet.Protocol.Data.Control.KeepAlive       as K
 import qualified Network.Ricochet.Protocol.Data.Control.EnableFeatures  as E
 import qualified Network.Ricochet.Protocol.Data.Control.FeaturesEnabled as F
 
-import           Network.Ricochet.Protocol.Protobuf (utf8')
+import           Network.Ricochet.Protocol.Protobuf (utf8', i32)
 import           Network.Ricochet.Types           (ChannelType(..))
 
 import           Control.Lens                     (Lens', Traversal', _Just,
                                                    below, iso)
 import           Data.ByteString                  (ByteString)
 import           Data.Text                        (Text)
-import           GHC.Int                          (Int32)
+import           GHC.Word                         (Word16)
 import           Text.ProtocolBuffers             (Seq)
 
 -- | A request to to open an additional channel.  The receiver should check its
@@ -91,20 +91,21 @@ class HasChannelIdentifier m where
   --   * The identifier must not be used by an open channel
   --   * The identifier should increase for every OpenChannel message, wrapping
   --     if necessary.  Identifiers should not be re-used except after wrapping.
-  channel_identifier :: Lens' m Int32
+  channel_identifier :: Lens' m Word16
 
 instance HasChannelIdentifier O.OpenChannel where
-  channel_identifier = O.channel_identifier
+  channel_identifier = O.channel_identifier . iso fromIntegral fromIntegral
 
 instance HasChannelIdentifier R.ChannelResult where
-  channel_identifier = R.channel_identifier
+  channel_identifier = R.channel_identifier . iso fromIntegral fromIntegral
 
 -- | The type of the requested channel.  By convention, it is in reverse URI
 --   format, e.g. @im.ricochet.chat@.  It specifies what kind of extensions to
 --   the 'O.OpenChannel' and 'R.ChannelResult' messages are allowed, and what
 --   kind of packets will be sent in the channel.
-channel_type :: Traversal' O.OpenChannel Text
-channel_type = O.channel_type . utf8'
+channel_type :: Traversal' O.OpenChannel ChannelType
+channel_type = O.channel_type . utf8' . iso MkChannelType fromChannelType
+  where fromChannelType (MkChannelType t) = t
 
 -- | Whether the requested channel is now open and ready to receive packets.
 opened :: Lens' R.ChannelResult Bool
