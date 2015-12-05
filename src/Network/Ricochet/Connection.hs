@@ -13,13 +13,17 @@ module Network.Ricochet.Connection
   , connectTo
   ) where
 
-import           Network.Ricochet.Monad
-import           Network.Ricochet.Types
-import           Network.Ricochet.Version
+import           Network.Ricochet.Monad   (Ricochet, closeConnection,
+                                           connections, serverSocket, socksPort, versions)
+import           Network.Ricochet.Types   (Connection, ConnectionRole(..),
+                                           ParserResult(..), cHandle,
+                                           cInputBuffer, makeConnection)
+import           Network.Ricochet.Version (Versions, dumpIntroduction,
+                                           parseIntroduction)
 
 import           Control.Arrow            (first)
 import           Control.Concurrent       (threadDelay)
-import           Control.Lens
+import           Control.Lens             ((%=), (^.), filtered, use)
 import           Control.Monad            (when)
 import           Control.Monad.IO.Class   (liftIO)
 import           Data.ByteString          (ByteString ())

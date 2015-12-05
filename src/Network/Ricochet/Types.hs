@@ -10,12 +10,12 @@ lenses used throughout the package.
 {-# LANGUAGE OverloadedStrings #-}
 module Network.Ricochet.Types where
 
-import           Control.Lens
-import           Data.ByteString (ByteString ())
+import           Control.Lens                    (makeLenses, makePrisms)
+import           Data.ByteString                 (ByteString ())
 import qualified Data.ByteString as B
-import           Data.Word       (Word16)
-import           Network.Socket  (Socket ())
-import           System.IO       (Handle ())
+import           Data.Word                       (Word16)
+import           Network.Socket                  (Socket ())
+import           System.IO                       (Handle ())
 
 -- | Low level representation of a ricochet packet
 data Packet = MkPacket

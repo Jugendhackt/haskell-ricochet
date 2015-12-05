@@ -32,9 +32,8 @@ import           Network.Ricochet.Protocol.Data.Control.OpenChannel (OpenChannel
 
 import           Network.Ricochet.Protocol.Protobuf (ext, utf8')
 
-import           Control.Lens
+import           Control.Lens                     (Lens', Traversal', _Just)
 import           Data.Text                        (Text)
-import           Text.ProtocolBuffers
 
 -- | Request a hidden service @onion@ domain to be added to the recipient’s
 --   contact list.  This will usually prompt the recipient user.

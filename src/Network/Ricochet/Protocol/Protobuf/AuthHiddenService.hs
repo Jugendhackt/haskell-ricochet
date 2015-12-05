@@ -34,10 +34,9 @@ import           Network.Ricochet.Protocol.Data.Control.OpenChannel (OpenChannel
 
 import           Network.Ricochet.Protocol.Protobuf (ext)
 
-import           Control.Lens
-import           Control.Monad
+import           Control.Lens                     (Lens', Traversal', _Just,
+                                                   strict)
 import           Data.ByteString                  (ByteString)
-import           Text.ProtocolBuffers
 
 -- | The client’s part of the random string that will be used as an input to
 --   calculate the proof.

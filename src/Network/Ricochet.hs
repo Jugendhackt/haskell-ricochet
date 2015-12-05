@@ -10,17 +10,20 @@ import Network.Ricochet.Types
 import Network.Ricochet.Util
 import Network.Ricochet.Version
 
-import Data.Map (fromList)
-import Data.Base32String (Base32String)
-import Data.ByteString (ByteString)
-import Data.Word (Word8)
-import Network (PortID(..), Socket, listenOn)
-import Control.Lens
-import Control.Monad (void, forever)
-import Control.Monad.IO.Class (liftIO)
-import Control.Monad.State (evalStateT)
-import Network.BSD (getServicePortNumber)
-import Network.Anonymous.Tor (mapOnion, withSession)
+import           Data.Map                         (fromList)
+import           Data.Base32String.Default        (Base32String, fromBinary,
+                                                   toText)
+import           Data.ByteString                  (ByteString)
+import           Data.Text                        (toLower)
+import           Data.Text.Encoding               (encodeUtf8)
+import           Data.Word                        (Word8)
+import           Network                          (PortID(..), Socket, listenOn)
+import           Control.Lens
+import           Control.Monad                    (void, forever)
+import           Control.Monad.IO.Class           (liftIO)
+import           Control.Monad.State              (evalStateT)
+import           Network.BSD                      (getServicePortNumber)
+import           Network.Anonymous.Tor            (mapOnion, withSession)
 
 -- | Start an action inside the Ricochet monad.
 --

@@ -26,7 +26,8 @@ import           Network.Ricochet.Util
 
 import           Control.Applicative              (Applicative (..))
 import           Control.Concurrent               (threadDelay)
-import           Control.Lens
+import           Control.Lens                     ((<%=), (%=), (^.),
+                                                   makeLenses, use)
 import           Control.Monad.IO.Class           (MonadIO (..))
 import           Control.Monad.State              (MonadState (..), StateT (..))
 import           Data.ByteString                  (ByteString ())
