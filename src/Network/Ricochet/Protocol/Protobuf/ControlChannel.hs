@@ -40,13 +40,14 @@ import qualified Network.Ricochet.Protocol.Data.Control.EnableFeatures  as E
 import qualified Network.Ricochet.Protocol.Data.Control.FeaturesEnabled as F
 
 import           Network.Ricochet.Protocol.Protobuf (utf8')
+import           Network.Ricochet.Types           (ChannelType(..))
 
-import           Control.Lens
-import           Control.Monad
+import           Control.Lens                     (Lens', Traversal', _Just,
+                                                   below, iso)
 import           Data.ByteString                  (ByteString)
 import           Data.Text                        (Text)
 import           GHC.Int                          (Int32)
-import           Text.ProtocolBuffers
+import           Text.ProtocolBuffers             (Seq)
 
 -- | A request to to open an additional channel.  The receiver should check its
 --   validity and reply with a 'R.ChannelResult' message.

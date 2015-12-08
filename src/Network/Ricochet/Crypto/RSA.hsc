@@ -31,7 +31,8 @@ import           Foreign.C.Types            (CLong(..), CInt(..))
 import           Foreign.Marshal.Alloc      (alloca)
 import           Foreign.Storable           (poke)
 import           GHC.Word                   (Word8)
-import           OpenSSL.RSA
+import           OpenSSL.RSA                (RSA, RSAKey, RSAKeyPair, RSAPubKey,
+                                             absorbRSAPtr, rsaSize, withRSAPtr)
 import           System.IO.Unsafe           (unsafePerformIO)
 
 type CDecodeFun = Ptr (Ptr RSA) -> Ptr CString -> CLong -> IO (Ptr RSA)

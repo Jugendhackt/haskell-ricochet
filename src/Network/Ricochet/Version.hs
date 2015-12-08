@@ -19,12 +19,13 @@ module Network.Ricochet.Version
 
 import           Prelude                    hiding (lookup)
 
-import           Network.Ricochet.Monad
-import           Network.Ricochet.Util
-import           Network.Ricochet.Types
+import           Network.Ricochet.Util      (parserResult)
+import           Network.Ricochet.Monad     (Ricochet)
+import           Network.Ricochet.Types     (Connection, ParserResult)
 
 import           Control.Applicative        ((<|>))
-import           Data.Attoparsec.ByteString
+import           Data.Attoparsec.ByteString (Parser, anyWord8, count, parse,
+                                             string)
 import           Data.ByteString            (ByteString ())
 import qualified Data.ByteString            as B
 import           Data.List                  (elem)

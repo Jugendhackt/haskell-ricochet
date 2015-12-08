@@ -6,23 +6,34 @@
 throughout the package.
 -}
 
+{-# LANGUAGE RankNTypes #-}
+
 module Network.Ricochet.Util
   ( parserResult
   , anyWord16
   , joinWord8s
+  , look
+  , lookWith
   ) where
 
-import           Network.Ricochet.Types
+import           Network.Ricochet.Types           (ParserResult(..))
 
-import           Control.Monad              (liftM2)
-import           Data.Attoparsec.ByteString
-import           Data.Bits                  (shiftL)
-import           Data.ByteString            (ByteString ())
-import           GHC.Word
+import           Control.Lens                     (Traversal', (^?), filtered,
+                                                   traversed)
+import           Control.Monad                    (liftM2)
+import           Data.Attoparsec.ByteString       (Parser, Result(..),
+                                                   IResult(..), anyWord8)
+import           Data.Bits                        (shiftL)
+import           Data.ByteString                  (ByteString ())
+import           GHC.Word                         (Word8, Word16)
 
 -- | Joins two Word8s into a single Word16
 joinWord8s :: Word8 -> Word8 -> Word16
 joinWord8s a b = (fromIntegral a `shiftL` 8) + fromIntegral b
+
+-- | Parses two bytes into a Word16
+anyWord16 :: Parser Word16
+anyWord16 = liftM2 joinWord8s anyWord8 anyWord8
 
 -- | Takes an attoparsec result and converts it
 --   into a our representation.
@@ -31,6 +42,11 @@ parserResult (Done i r)  = Success r i
 parserResult (Partial _) = Unfinished
 parserResult _           = Failure
 
--- | Parses two bytes into a Word16
-anyWord16 :: Parser Word16
-anyWord16 = liftM2 joinWord8s anyWord8 anyWord8
+-- | Lookup an item in a list
+look :: (Eq a) => a -> Traversal' [a] a
+look x = traversed . filtered (== x)
+
+-- | Lookup an item in a list, extracting an identifier using the given
+--   Traversal before comparison
+lookWith :: (Eq b) => Traversal' a b -> b -> Traversal' [a] a
+lookWith t x = traversed . filtered ((== Just x) . (^? t))

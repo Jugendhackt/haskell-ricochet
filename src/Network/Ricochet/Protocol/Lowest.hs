@@ -18,10 +18,10 @@ import           Prelude                    hiding (take)
 
 import           Network.Ricochet.Types     (Packet (..), ParserResult (..),
                                              makePacket, _Success)
-import           Network.Ricochet.Util
+import           Network.Ricochet.Util      (anyWord16, parserResult)
 
-import           Control.Lens
-import           Data.Attoparsec.ByteString
+import           Control.Lens               (Prism', (^?), _1, prism')
+import           Data.Attoparsec.ByteString (Parser, parse, take)
 import           Data.Bifunctor             (first)
 import           Data.ByteString            (ByteString ())
 import qualified Data.ByteString            as B

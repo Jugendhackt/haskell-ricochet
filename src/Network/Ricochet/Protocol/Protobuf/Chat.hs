@@ -26,10 +26,11 @@ import qualified Network.Ricochet.Protocol.Data.Chat.ChatAcknowledge as CA
 
 import           Network.Ricochet.Protocol.Protobuf (utf8')
 
-import           Control.Lens
+import           Control.Lens                     (Traversal', Lens', _Just,
+                                                   non)
 import           Data.Text                        (Text)
-import           Data.Word                  (Word32)
-import           Data.Int                   (Int64)
+import           Data.Word                        (Word32)
+import           Data.Int                         (Int64)
 import           Text.ProtocolBuffers
 
 -- | Only the initiator of the channel should send a packet where this traversal

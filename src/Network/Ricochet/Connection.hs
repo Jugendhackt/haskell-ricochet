@@ -9,18 +9,21 @@ as the first few steps of the protocol.
 {-# LANGUAGE OverloadedStrings #-}
 
 module Network.Ricochet.Connection
-  ( createState
-  , awaitConnection
+  ( awaitConnection
   , connectTo
   ) where
 
-import           Network.Ricochet.Monad
-import           Network.Ricochet.Types
-import           Network.Ricochet.Version
+import           Network.Ricochet.Monad   (Ricochet, closeConnection,
+                                           connections, serverSocket, socksPort, versions)
+import           Network.Ricochet.Types   (Connection, ConnectionRole(..),
+                                           ParserResult(..), cHandle,
+                                           cInputBuffer, makeConnection)
+import           Network.Ricochet.Version (Versions, dumpIntroduction,
+                                           parseIntroduction)
 
 import           Control.Arrow            (first)
 import           Control.Concurrent       (threadDelay)
-import           Control.Lens
+import           Control.Lens             ((%=), (^.), filtered, use)
 import           Control.Monad            (when)
 import           Control.Monad.IO.Class   (liftIO)
 import           Data.ByteString          (ByteString ())
@@ -32,12 +35,6 @@ import           Network                  (PortID (..), accept, listenOn)
 import           Network.Socks5           (socksConnectTo)
 import           System.IO                (BufferMode (..), Handle (),
                                            hSetBuffering)
-
--- | Creates a new RicochetState listening on the supplied port
-createState :: PortID -> IO RicochetState
-createState port = do
-  sock <- listenOn port
-  return $ MkRicochetState sock [] [] (PortNumber 9050) M.empty
 
 -- | Waits until a new peer connects to initiate a connection
 awaitConnection :: Ricochet Connection
@@ -55,7 +52,8 @@ connectTo domain port = do
   handle <- liftIO $ socksConnectTo "localhost" torPort domain port
   initiateConnection handle Client
 
--- | Initiate a newly made connection
+-- | Initiate a newly made connection.  This includes the version negotiation
+--   and running the corresponding version handler
 initiateConnection :: Handle              -- ^ Handle corresponding to the connection to the peer
                    -> ConnectionRole      -- ^ The connection role of this side of the connection
                    -> Ricochet Connection -- ^ Returns the finished 'Connection'

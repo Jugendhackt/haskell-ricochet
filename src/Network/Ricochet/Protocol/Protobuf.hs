@@ -13,12 +13,17 @@ module Network.Ricochet.Protocol.Protobuf
   , utf8'
   ) where
 
-import           Control.Lens
+import           Control.Lens             (Iso', Prism', Traversal', (^?), _1,
+                                           _Just, _Right, iso, lazy, lens,
+                                           prism', strict, to)
 import           Control.Monad
 import           Data.ByteString          (ByteString)
 import           Data.Text                (Text)
 import           Data.Text.Encoding       (decodeUtf8', encodeUtf8)
-import           Text.ProtocolBuffers
+import           Text.ProtocolBuffers     (Default, ExtKey, Key,
+                                           ReflectDescriptor, Utf8(..), Wire,
+                                           defaultValue, utf8, getExt,
+                                           messageGet, messagePut, putExt)
 
 -- | Take an extension key and return a Traversal' that yields all the values to
 --   that extension key
