@@ -40,7 +40,7 @@ import           OpenSSL.EVP.Digest         (Digest, getDigestByName, hmacBS,
                                              digestBS)
 import           OpenSSL.EVP.PKey           (KeyPair, PublicKey)
 import           OpenSSL.EVP.Sign           (signBS)
-import           OpenSSL.EVP.Verify         (VerifyStatus, verifyBS)
+import           OpenSSL.EVP.Verify         (VerifyStatus(..), verifyBS)
 import           OpenSSL.RSA                (RSAKey, RSAKeyPair, RSAPubKey,
                                              generateRSAKey', rsaCopyPublic)
 import           System.IO.Unsafe           (unsafePerformIO)
@@ -79,8 +79,10 @@ verify :: PublicKey k
                           --   private key used to sign the message
           -> ByteString   -- ^ The message that was signed
           -> ByteString   -- ^ The signature that is to be verified
-          -> VerifyStatus -- ^ Whether the signature is valid or not
-verify key msg sig = unsafePerformIO $ verifyBS sha256 sig key msg
+          -> Bool         -- ^ Whether the signature is valid or not
+verify key msg sig = fromVerStat . unsafePerformIO $ verifyBS sha256 sig key msg
+  where fromVerStat VerifySuccess = True
+        fromVerStat VerifyFailure = False
 
 -- | A Prism that allows ASN.1 DER encoding and decoding of RSA public keys
 publicDER :: Prism' ByteString RSAPubKey

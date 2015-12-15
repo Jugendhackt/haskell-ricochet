@@ -33,7 +33,6 @@ import           Foreign.C.Types            (CLong(..), CInt(..), CUInt(..))
 import           Foreign.Marshal.Alloc      (alloca)
 import           Foreign.Storable           (peek, poke)
 import           GHC.Word                   (Word8)
-import           OpenSSL.EVP.Verify         (VerifyStatus(..))
 import           OpenSSL.RSA                (RSA, RSAKey, RSAKeyPair, RSAPubKey,
                                              absorbRSAPtr, rsaSize, withRSAPtr)
 import           System.IO.Unsafe           (unsafePerformIO)
@@ -131,11 +130,9 @@ rawRSASign k bs = unsafePerformIO $ do
 --   is required because the ricochet protocol doesn’t sha256-hash the
 --   sha256-hmac’ed proof before signing. (The non-raw version of this function
 --   hashes its input before verifying.)
-rawRSAVerify :: RSAKey k => k -> ByteString -> ByteString -> VerifyStatus
-rawRSAVerify k dig sig = toVerifyStatus . (== 1) . unsafePerformIO $ do
+rawRSAVerify :: RSAKey k => k -> ByteString -> ByteString -> Bool
+rawRSAVerify k dig sig = (== 1) . unsafePerformIO $ do
   withRSAPtr k $ \key ->
     B.useAsCStringLen dig $ \(cdig, dlen) ->
       B.useAsCStringLen sig $ \(csig, slen) ->
         _rsa_verify _nid_sha256 cdig (fromIntegral dlen) csig (fromIntegral slen) key
-  where toVerifyStatus True = VerifySuccess
-        toVerifyStatus False = VerifyFailure
