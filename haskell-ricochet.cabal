@@ -51,6 +51,7 @@ library
                      , Network.Ricochet.Protocol.Data.Control.Packet
   -- other-extensions:    
   build-depends:       base
+                     , base32-bytestring
                      , base32string
                      , base64-bytestring
                      , network
