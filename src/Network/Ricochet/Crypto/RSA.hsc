@@ -111,7 +111,9 @@ _nid_sha256 :: CInt
 _nid_sha256 = #const NID_sha256
 
 -- | Sign a hash digest using the given RSA key, assuming the digest was
---   produced with sha256.
+--   produced with sha256.  This function is required because the ricochet
+--   protocol doesn’t sha256-hash the sha256-hmac’ed proof before signing. (The
+--   non-raw version of this function hashes its input before signing.)
 rawRSASign :: RSAKeyPair -> ByteString -> ByteString
 rawRSASign k bs = unsafePerformIO $ do
   -- The signature is of the same length as the key modulus
@@ -125,7 +127,10 @@ rawRSASign k bs = unsafePerformIO $ do
               peek iptr
 
 -- | Verify that a signature was created using the given hash digest and the
---   given RSA key, assuming the digest was produced with sha256.
+--   given RSA key, assuming the digest was produced with sha256.  This function
+--   is required because the ricochet protocol doesn’t sha256-hash the
+--   sha256-hmac’ed proof before signing. (The non-raw version of this function
+--   hashes its input before verifying.)
 rawRSAVerify :: RSAKey k => k -> ByteString -> ByteString -> VerifyStatus
 rawRSAVerify k dig sig = toVerifyStatus . (== 1) . unsafePerformIO $ do
   withRSAPtr k $ \key ->
