@@ -10,12 +10,16 @@ lenses used throughout the package.
 {-# LANGUAGE OverloadedStrings #-}
 module Network.Ricochet.Types where
 
-import           Control.Lens                    (makeLenses, makePrisms)
-import           Data.ByteString                 (ByteString ())
-import qualified Data.ByteString as B
-import           Data.Word                       (Word16)
-import           Network.Socket                  (Socket ())
-import           System.IO                       (Handle ())
+import           Control.Lens                     (makeLenses, makePrisms)
+import           Data.Map                         (Map ())
+import           Data.Text                        (Text)
+import           Control.Monad.IO.Class           (MonadIO (..))
+import           Control.Monad.State              (MonadState (..), StateT (..))
+import           Data.ByteString                  (ByteString ())
+import qualified Data.ByteString as B             (empty, length)
+import           Data.Word                        (Word16)
+import           Network.Socket                   (Socket ())
+import           System.IO                        (Handle ())
 
 -- | Low level representation of a ricochet packet
 data Packet = MkPacket
@@ -62,7 +66,7 @@ data Channel = MkChannel
   }
 
 -- | The type of a channel is preliminarily represented by a ByteString for extensibility
-data ChannelType = MkChannelType ByteString
+data ChannelType = MkChannelType Text
 
 -- | A contact, defined by his ID (TOR hidden service address without the .onion and the 'ricochet:' prefix) and his display name
 data Contact = MkContact

@@ -11,6 +11,8 @@ prove ownership of a service name before sending a contact request.
 See <https://github.com/ricochet-im/ricochet/blob/master/doc/protocol.md#authhiddenservice ricochet’s protocol specification>.
 -}
 
+{-# LANGUAGE NoMonomorphismRestriction #-}
+
 module Network.Ricochet.Protocol.Protobuf.AuthHiddenService
   ( client_cookie
   , server_cookie
@@ -40,13 +42,11 @@ import           Data.ByteString                  (ByteString)
 
 -- | The client’s part of the random string that will be used as an input to
 --   calculate the proof.
-client_cookie :: Traversal' OpenChannel ByteString
-client_cookie = ext _client_cookie . _Just . strict
+client_cookie = ext _client_cookie
 
 -- | The server’s part of the random string that will be used as an input to
 --   calculate the proof.
-server_cookie :: Traversal' ChannelResult ByteString
-server_cookie = ext _server_cookie . _Just . strict
+server_cookie = ext _server_cookie
 
 -- | If the 'AP.Packet' came from the client, it /must/ contain a 'Proof'.  It
 --   is used to prove the ownership of a hidden service to the server.
