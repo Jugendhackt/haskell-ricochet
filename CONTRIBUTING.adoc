@@ -54,6 +54,9 @@ compile at least.
 * Use two spaces as indentation.
 * Write haddock documentation comments (Make sure the text of multiline comments
   forms a neat block)
+* Use exact import declarations (example: `import Control.Monad (void,
+  forever)`)
+* Try to keep your lines shorter than 81 characters.
 * …
 
 == Communication
