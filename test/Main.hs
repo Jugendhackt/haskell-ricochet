@@ -10,15 +10,20 @@ module Main where
 
 import Test.Tasty
 import qualified Test.Tasty.QuickCheck as QC
+import qualified Test.Tasty.HUnit as HU
 
 import Network.Ricochet.Testing.Instances
 import Network.Ricochet.Testing.Crypto
 
 main = defaultMain tests
 
-tests = testGroup "Network.Ricochet.Testing" [ cryptoChecks ]
+tests = testGroup "Network.Ricochet.Testing" [ cryptoTests ]
 
-cryptoChecks = testGroup "Network.Ricochet.Testing.Crypto" [
+cryptoTests = testGroup "Network.Ricochet.Testing.Crypto" [
     QC.testProperty "base64check: en- and decoding works" base64Check
   , QC.testProperty "signCheck: signing and verifying works" signCheck
+  , QC.testProperty "rawSignCheck: raw signing and verifying works" rawSignCheck
+  , HU.testCase
+      "torDomainAssertion: hidden service domains are computed correctly"
+      torDomainAssertion
   ]

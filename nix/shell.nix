@@ -7,7 +7,7 @@ let
   f = { cabal-install, mkDerivation, attoparsec, base, base32-bytestring
       , base32string, base64-bytestring, bytestring , containers, hprotoc
       , HsOpenSSL, lens , mtl, network , network-anonymous-tor, socks, stdenv
-      , transformers, tasty, QuickCheck, tasty-quickcheck
+      , transformers, tasty, QuickCheck, tasty-quickcheck, HUnit, tasty-hunit
       }:
       mkDerivation {
         pname = "haskell-ricochet";
@@ -24,7 +24,7 @@ let
           base bytestring containers lens mtl network
         ];
         testHaskellDepends = [
-          tasty QuickCheck tasty-quickcheck
+          tasty QuickCheck tasty-quickcheck HUnit tasty-hunit
         ];
         description = "ricochet reimplementation in Haskell";
         license = stdenv.lib.licenses.gpl3;
