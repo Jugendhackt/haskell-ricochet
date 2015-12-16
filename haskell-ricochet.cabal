@@ -29,6 +29,7 @@ library
                      , Network.Ricochet.Types
                      , Network.Ricochet.Util
                      , Network.Ricochet.Version
+                     , Network.Ricochet.Channel
   other-modules:       Network.Ricochet.Crypto.RSA
                      , Network.Ricochet.Protocol.Data.AuthHiddenService
                      , Network.Ricochet.Protocol.Data.AuthHiddenService.Packet
