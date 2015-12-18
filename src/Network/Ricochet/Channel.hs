@@ -29,9 +29,17 @@ import Control.Applicative (Alternative(..))
 -- | A 'Channel' of the source type s, transformed to yield values of type a
 data Channel s a = MkChannel (Chan s) (APrism' s a)
 
+-- | Helper function for creating source channels
+mkSource :: Chan s -> Channel s s
+mkSource = flip MkChannel (prism' id Just)
+
 -- | Create a new, empty 'Channel'
 newChannel :: IO (Channel s s)
-newChannel = flip MkChannel (prism' id Just) <$> newChan
+newChannel = mkSource <$> newChan
+
+-- | Duplicate a 'Channel', yielding a 'Channel' transporting the source type.
+dupSource :: Channel s a -> IO (Channel s s)
+dupSource (MkChannel c _) = mkSource <$> dupChan c
 
 -- | Duplicate a 'Channel'. Everything written on either on can be read on both
 --   of them from now on.
