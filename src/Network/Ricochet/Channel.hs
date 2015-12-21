@@ -54,7 +54,7 @@ readChannel c@(MkChannel chan p) = (^? clonePrism p) <$> readChan chan >>= \case
 
 -- | Write a value to a 'Channel'
 writeChannel :: Channel s a -> a -> IO ()
-writeChannel (MkChannel chan p) = writeChan chan . (^. (re . clonePrism $ p))
+writeChannel (MkChannel chan p) = writeChan chan . (clonePrism p #)
 
 -- | Transform a 'Channel' into one yielding another type. This function can
 --   also be used to filter over 'Channel's.
@@ -72,12 +72,6 @@ mergeChannel (MkChannel chan p) (MkChannel chan' q)
 
 -- | Merges two 'Prism's the way we need it for 'mergeChannel'
 mergePrisms :: APrism' s a -> APrism' s b -> APrism' s (Either a b)
-mergePrisms p q = withPrism q . withPrism p $ f
-  where f pbt psta qbt qsta = prism rbt rsta
-          where rbt (Left  a) = pbt a
-                rbt (Right b) = qbt b
-                rsta s = case psta s of
-                         Right a -> Right . Left $ a
-                         Left s' -> case qsta s' of
-                           Right b  -> Right . Right $ b
-                           Left s'' -> Left s''
+mergePrisms p q = prism' fromEither toEither
+  where fromEither = either (clonePrism p #) (clonePrism q #)
+        toEither s = Left <$> s ^? clonePrism p <|> Right <$> s ^? clonePrism q
