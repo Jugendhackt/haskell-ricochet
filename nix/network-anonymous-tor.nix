@@ -8,8 +8,8 @@ mkDerivation {
   version = "0.10.0";
   src = fetchgit {
     url = "https://github.com/solatis/haskell-network-anonymous-tor";
-    sha256 = "9adb606d73b04dfb261d6e899b7a25626c600f386cc9aa203a32633955a87807";
-    rev = "464e63373aea426a5efd11577311fe5177b8e78a";
+    sha256 = "223d79a8003a17c030ef51cdd9795c64fd3fbab91c2a5e580302c498cab9356c";
+    rev = "d2bac315ffec642689480348d4447b042677ed20";
   };
   isLibrary = true;
   isExecutable = true;
