@@ -14,6 +14,7 @@ import Control.Concurrent.MVar
 import Control.Monad
 import Control.Monad.IO.Class
 import qualified Data.ByteString.Char8 as B8
+import Data.Monoid((<>))
 import Network hiding (connectTo)
 import Network.Ricochet
 import Network.Ricochet.Connection
@@ -31,8 +32,10 @@ connectionAssertion = do
     use hiddenDomain >>= liftIO . putMVar mVar
     awaitConnection >>= closeConnection
 
+  threadDelay . round $ 3 * 10 ** 7
+
   -- Try connecting to it
   startRicochet (PortNumber 9881) Nothing (PortNumber 9051) []
                 (PortNumber 9050) [(1, closeConnection)] $ do
     domain <- B8.unpack <$> (liftIO . readMVar $ mVar)
-    connectTo domain (PortNumber 9880) >>= closeConnection
+    connectTo (domain <> ".onion") (PortNumber 9880) >>= closeConnection
