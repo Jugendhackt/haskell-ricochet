@@ -26,9 +26,9 @@ library
                      , Network.Ricochet.Protocol.Protobuf.Chat
                      , Network.Ricochet.Protocol.Protobuf.ContactRequest
                      , Network.Ricochet.Protocol.Protobuf.ControlChannel
+                     , Network.Ricochet.Protocol.Version
                      , Network.Ricochet.Types
                      , Network.Ricochet.Util
-                     , Network.Ricochet.Version
                      , Network.Ricochet.Channel
   other-modules:       Network.Ricochet.Crypto.RSA
                      , Network.Ricochet.Protocol.Data.AuthHiddenService

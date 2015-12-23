@@ -18,8 +18,8 @@ import           Network.Ricochet.Monad   (Ricochet, closeConnection,
 import           Network.Ricochet.Types   (Connection, ConnectionRole(..),
                                            ParserResult(..), cHandle,
                                            cInputBuffer, makeConnection)
-import           Network.Ricochet.Version (Versions, dumpIntroduction,
-                                           parseIntroduction)
+import           Network.Ricochet.Protocol.Version (Versions, dumpIntroduction,
+                                                    parseIntroduction)
 
 import           Control.Arrow            (first)
 import           Control.Concurrent       (threadDelay)

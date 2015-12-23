@@ -6,9 +6,9 @@ import Network.Ricochet.Protocol.Packets
 import Network.Ricochet.Protocol.Protobuf
 import Network.Ricochet.Protocol.Protobuf.AuthHiddenService
 import Network.Ricochet.Protocol.Protobuf.ControlChannel
+import Network.Ricochet.Protocol.Version
 import Network.Ricochet.Types
 import Network.Ricochet.Util
-import Network.Ricochet.Version
 
 import           Data.Map                         (fromList)
 import           Data.Base32String.Default        (toText)

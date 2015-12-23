@@ -9,7 +9,7 @@ definitions.
 
 {-# LANGUAGE OverloadedStrings #-}
 
-module Network.Ricochet.Version
+module Network.Ricochet.Protocol.Version
   ( Versions ()
   , Version ()
   , ConnectionHandler ()
@@ -61,5 +61,5 @@ introductionParser supportedVersions = do
 -- | Dumps the introduction message
 dumpIntroduction :: Versions -> ByteString
 dumpIntroduction supportedVersions = "IM" <> versionCount <> versions
-  where versionCount = B.singleton (fromIntegral . size $ supportedVersions :: Word8) 
+  where versionCount = B.singleton (fromIntegral . size $ supportedVersions :: Word8)
         versions     = foldl (\s c -> s <> B.singleton c) "" (keys supportedVersions)
