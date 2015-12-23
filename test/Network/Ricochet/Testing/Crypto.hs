@@ -37,9 +37,10 @@ import Network
 import OpenSSL.EVP.Verify hiding (verify)
 import OpenSSL.RSA (RSAKeyPair)
 
+-- TODO: Extract this into some general utility
 type RSAPool = M.Map RSATestIdent (Chan RSAKeyPair)
 
-data RSATestIdent = SignCheck | RawSignCheck | TorDomainAssertion
+data RSATestIdent = RandomSigs | CorrectSigs | RawRandomSigs | RawCorrectSigs | TorDomainAssertion
   deriving (Bounded, Enum, Eq, Ord)
 
 newRSAPool :: IO RSAPool
@@ -69,26 +70,40 @@ rsaTests = withResource newRSAPool (const $ return ()) rsaTests'
 
 rsaTests' :: IO RSAPool -> TestTree
 rsaTests' pool = testGroup "Network.Ricochet.Testing.Crypto.RSA"
-  [ QC.testProperty "signCheck: signing and verifying works" (signCheck pool)
-  , QC.testProperty "rawSignCheck: raw signing and verifying works" (rawSignCheck pool)
+  [ QC.testProperty "randomSigs: verifying random signatures fails" (randomSigs pool)
+  , QC.testProperty "correctSigs: verifying correct signatures succeeds" (correctSigs pool)
+  , QC.testProperty "rawRandomSigs: verifying random raw signatures fails" (rawRandomSigs pool)
+  , QC.testProperty "rawCorrectSigs: verifying correct raw signatures succeeds" (rawCorrectSigs pool)
   , HU.testCase "torDomainAssertion: hidden service domains are computed correctly" (torDomainAssertion pool)
   ]
 
--- | Check the sign and verify functions
-signCheck :: IO RSAPool -> ByteString -> ByteString -> Property
-signCheck pool bs bs' = monadicIO $ do
-  key <- run $ getRSAKeyPair pool SignCheck
+-- | Verifying random signatures fails
+randomSigs :: IO RSAPool -> ByteString -> ByteString -> Property
+randomSigs pool bs bs' = monadicIO $ do
+  key <- run $ getRSAKeyPair pool RandomSigs
   let signature    = sign key bs
-  assert . verify key bs $ signature
   assert . not . verify key bs' $ signature
 
--- | Check the raw sign and verify functions
-rawSignCheck :: IO RSAPool -> ByteString -> ByteString -> Property
-rawSignCheck pool bs bs' = monadicIO $ do
-  key <- run $ getRSAKeyPair pool RawSignCheck
+-- | Verifying correct signatures succeeds
+correctSigs :: IO RSAPool -> ByteString -> Property
+correctSigs pool bs = monadicIO $ do
+  key <- run $ getRSAKeyPair pool CorrectSigs
+  let signature    = sign key bs
+  assert . verify key bs $ signature
+
+-- | Verifying random raw signatures fails
+rawRandomSigs :: IO RSAPool -> ByteString -> ByteString -> Property
+rawRandomSigs pool bs bs' = monadicIO $ do
+  key <- run $ getRSAKeyPair pool RawRandomSigs
+  let signature    = rawRSASign key bs
+  assert . not . rawRSAVerify key bs' $ signature
+
+-- | Verifying correct raw signatures succeeds
+rawCorrectSigs :: IO RSAPool -> ByteString -> Property
+rawCorrectSigs pool bs = monadicIO $ do
+  key <- run $ getRSAKeyPair pool RawCorrectSigs
   let signature    = rawRSASign key bs
   assert . rawRSAVerify key bs $ signature
-  assert . not . rawRSAVerify key bs' $ signature
 
 -- | Assert that torDomain computes the correct domain
 torDomainAssertion :: IO RSAPool -> Assertion
