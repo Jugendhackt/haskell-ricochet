@@ -1,13 +1,14 @@
 {-|
-  Module:      Network.Ricochet.Protocol.Lowest
-  Description: Implementation of the low-level protocol parsing
+  Module:      Network.Ricochet.Protocol.Packets
+  Description: Parsing, dumping and splitting low-level Packets
 
-"Network.Ricochet.Protocol.Lowest" implements the parsing of the parts of the
-protocol which aren't described via Google Protobuf.
+This module implements the parsing and dumping of the low-level Packets (ie.
+those not described via Google Protobuf), as well as splitting a ByteString into
+a series of Packets.
 -}
 
 {-# LANGUAGE TupleSections #-}
-module Network.Ricochet.Protocol.Lowest
+module Network.Ricochet.Protocol.Packets
   ( parsePacket
   , dumpPacket
   , splitIntoPackets

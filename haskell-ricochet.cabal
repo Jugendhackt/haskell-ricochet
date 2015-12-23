@@ -20,7 +20,7 @@ library
                      , Network.Ricochet.Connection
                      , Network.Ricochet.Crypto
                      , Network.Ricochet.Monad
-                     , Network.Ricochet.Protocol.Lowest
+                     , Network.Ricochet.Protocol.Packets
                      , Network.Ricochet.Protocol.Protobuf
                      , Network.Ricochet.Protocol.Protobuf.AuthHiddenService
                      , Network.Ricochet.Protocol.Protobuf.Chat

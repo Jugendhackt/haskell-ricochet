@@ -20,7 +20,7 @@ module Network.Ricochet.Monad
   , sendByteString, closeConnection
   ) where
 
-import           Network.Ricochet.Protocol.Lowest
+import           Network.Ricochet.Protocol.Packets
 import           Network.Ricochet.Types
 import           Network.Ricochet.Util
 
