@@ -45,13 +45,14 @@ data RSATestIdent = RandomSigs | CorrectSigs | RawRandomSigs | RawCorrectSigs | 
 
 newRSAPool :: IO RSAPool
 newRSAPool = do
+  chan <- newChan
   chanMap <- fmap M.fromList . forM ([minBound..maxBound] :: [RSATestIdent]) $
-    \k -> (k,) <$> newChan
+    \k -> (k,) <$> dupChan chan
   -- FIXME: Keys should be generated on demand:  We shouldn’t specify the total
   -- number of generated keys (100) here.
   forkIO . void . forM [1..100] . const $ do
     key <- generate1024BitRSA
-    forM chanMap (flip writeChan key)
+    writeChan chan key
   return chanMap
 
 getRSAKeyPair :: IO RSAPool -> RSATestIdent -> IO RSAKeyPair
