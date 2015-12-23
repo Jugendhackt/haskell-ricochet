@@ -94,6 +94,11 @@ data ParserResult a = Success a ByteString
                     | Unfinished
                     | Failure
 
+instance Functor ParserResult where
+  fmap f (Success a b) = (Success (f a) b)
+  fmap _ Unfinished    = Unfinished
+  fmap _ Failure       = Failure
+
 makeLenses ''Packet
 makeLenses ''Connection
 makeLenses ''Channel
