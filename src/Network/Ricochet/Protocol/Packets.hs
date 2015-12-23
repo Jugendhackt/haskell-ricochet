@@ -8,20 +8,28 @@ a series of Packets.
 -}
 
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Network.Ricochet.Protocol.Packets
   ( parsePacket
   , dumpPacket
   , splitIntoPackets
   , packet
+  , newPacketChannel
   ) where
 
 import           Prelude                    hiding (take)
 
 import           Network.Ricochet.Types     (Packet (..), ParserResult (..),
-                                             makePacket, _Success)
-import           Network.Ricochet.Util      (anyWord16, parserResult)
+                                             _Success, makePacket)
+import           Network.Ricochet.Channel   (Channel, newChannel, readChannel,
+                                             writeChannel)
+import           Network.Ricochet.Util      (anyWord16, lookWith, parserResult)
 
+import           Control.Concurrent         (forkIO, threadDelay)
 import           Control.Lens               (Prism', (^?), _1, prism')
+import           Control.Monad              (forever, void)
+import           Control.Monad.IO.Class     (MonadIO (..))
+import           Control.Monad.State        (StateT (..), get, put, runStateT)
 import           Data.Attoparsec.ByteString (Parser, parse, take)
 import           Data.Bifunctor             (first)
 import           Data.ByteString            (ByteString ())
@@ -31,6 +39,7 @@ import           Data.ByteString.Builder    (byteString, toLazyByteString,
 import           Data.ByteString.Lazy       (toStrict)
 import           Data.Monoid                ((<>))
 import           Data.Word                  (Word16, Word8)
+import           System.IO                  (Handle)
 
 
 -- | Actually parses a packet.
@@ -74,3 +83,41 @@ splitIntoPackets' chan (ps, bs) =
       -- Call the function again if there is some ByteString left
       GT -> splitIntoPackets' chan (ps <> [makePacket chan (B.take maxPackLen bs)], B.drop maxPackLen bs)
   where maxPackLen = fromIntegral (maxBound :: Word16) - 4
+
+-- | Create a channel that lets you read and write Packets to the given Handle
+newPacketChannel :: Handle -> IO (Channel Packet Packet)
+newPacketChannel handle = do
+  c <- newChannel
+  forkIO . void $ runStateT (forever $ nextPacket >>= liftIO . writeChannel c) (handle, "")
+  forkIO . void . forever $ readChannel c >>= sendPacket handle
+  return c
+
+-- | Checks if a complete packet is available on the given connection, and if
+--   so, reads and returns it.
+peekPacket :: StateT (Handle, ByteString) IO (Maybe Packet)
+peekPacket = do
+  (handle, buffer) <- get
+  readBytes <- liftIO $ B.hGetNonBlocking handle maxPacketSize
+  let buffer' = buffer <> readBytes
+  put (handle, buffer')
+  -- Try parsing a full packet and return it on success
+  case parsePacket buffer' of
+    Success packet rest -> do
+      put (handle, rest)
+      return $ Just packet
+    Unfinished -> return Nothing
+    Failure    -> return Nothing
+  where maxPacketSize = fromIntegral (maxBound :: Word16)
+
+-- | Waits for a complete packet to arrive and returns it
+nextPacket :: StateT (Handle, ByteString) IO Packet
+nextPacket = do
+  maybePacket <- peekPacket
+  case maybePacket of
+    Just pkt -> return pkt
+    Nothing -> liftIO (threadDelay delay) >> nextPacket
+  where delay = round $ 10 ** 6
+
+-- | Sends a Packet to a connected User
+sendPacket :: Handle -> Packet -> IO ()
+sendPacket handle pkt = B.hPutStr handle $ dumpPacket pkt
