@@ -85,11 +85,11 @@ splitIntoPackets' chan (ps, bs) =
   where maxPackLen = fromIntegral (maxBound :: Word16) - 4
 
 -- | Create a channel that lets you read and write Packets to the given Handle
-newPacketChannel :: Handle -> IO (Channel Packet Packet)
-newPacketChannel handle = do
+newPacketChannel :: (Handle, ByteString) -> IO (Channel Packet Packet)
+newPacketChannel p@(h, _) = do
   c <- newChannel
-  forkIO . void $ runStateT (forever $ nextPacket >>= liftIO . writeChannel c) (handle, "")
-  forkIO . void . forever $ readChannel c >>= sendPacket handle
+  forkIO . void $ runStateT (forever $ nextPacket >>= liftIO . writeChannel c) p
+  forkIO . forever $ readChannel c >>= sendPacket h
   return c
 
 -- | Checks if a complete packet is available on the given connection, and if
