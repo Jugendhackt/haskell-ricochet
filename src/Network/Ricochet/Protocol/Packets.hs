@@ -19,14 +19,15 @@ module Network.Ricochet.Protocol.Packets
 
 import           Prelude                    hiding (take)
 
-import           Network.Ricochet.Types     (Packet (..), ParserResult (..),
-                                             _Success, makePacket)
+import           Network.Ricochet.Types     (Connection(..), Packet (..),
+                                             ParserResult (..), _Success,
+                                             cInputBuffer, makePacket)
 import           Network.Ricochet.Channel   (Channel, newChannel, readChannel,
                                              writeChannel)
 import           Network.Ricochet.Util      (anyWord16, lookWith, parserResult)
 
 import           Control.Concurrent         (forkIO, threadDelay)
-import           Control.Lens               (Prism', (^?), _1, prism')
+import           Control.Lens               (Prism', (^?), (.=), _1, prism')
 import           Control.Monad              (forever, void)
 import           Control.Monad.IO.Class     (MonadIO (..))
 import           Control.Monad.State        (StateT (..), get, put, runStateT)
@@ -84,33 +85,34 @@ splitIntoPackets' chan (ps, bs) =
       GT -> splitIntoPackets' chan (ps <> [makePacket chan (B.take maxPackLen bs)], B.drop maxPackLen bs)
   where maxPackLen = fromIntegral (maxBound :: Word16) - 4
 
--- | Create a channel that lets you read and write Packets to the given Handle
-newPacketChannel :: (Handle, ByteString) -> IO (Channel Packet Packet)
-newPacketChannel p@(h, _) = do
-  c <- newChannel
-  forkIO . void $ runStateT (forever $ nextPacket >>= liftIO . writeChannel c) p
-  forkIO . forever $ readChannel c >>= sendPacket h
-  return c
+-- | Create a channel that lets you read and write Packets to the given
+--   Connection
+newPacketChannel :: Connection -> IO (Channel Packet Packet)
+newPacketChannel c@(MkConnection h b _) = do
+  chan <- newChannel
+  forkIO . void $ runStateT (forever $ nextPacket >>= liftIO . writeChannel chan) c
+  forkIO . forever $ readChannel chan >>= sendPacket h
+  return chan
 
 -- | Checks if a complete packet is available on the given connection, and if
 --   so, reads and returns it.
-peekPacket :: StateT (Handle, ByteString) IO (Maybe Packet)
+peekPacket :: StateT Connection IO (Maybe Packet)
 peekPacket = do
-  (handle, buffer) <- get
+  (MkConnection handle buffer _) <- get
   readBytes <- liftIO $ B.hGetNonBlocking handle maxPacketSize
   let buffer' = buffer <> readBytes
-  put (handle, buffer')
+  cInputBuffer .= buffer'
   -- Try parsing a full packet and return it on success
   case parsePacket buffer' of
     Success packet rest -> do
-      put (handle, rest)
+      cInputBuffer .= rest
       return $ Just packet
     Unfinished -> return Nothing
     Failure    -> return Nothing
   where maxPacketSize = fromIntegral (maxBound :: Word16)
 
 -- | Waits for a complete packet to arrive and returns it
-nextPacket :: StateT (Handle, ByteString) IO Packet
+nextPacket :: StateT Connection IO Packet
 nextPacket = do
   maybePacket <- peekPacket
   case maybePacket of

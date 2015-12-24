@@ -13,12 +13,9 @@ module Network.Ricochet.Types where
 import           Control.Lens                     (makeLenses, makePrisms)
 import           Data.Map                         (Map ())
 import           Data.Text                        (Text)
-import           Control.Monad.IO.Class           (MonadIO (..))
-import           Control.Monad.State              (MonadState (..), StateT (..))
 import           Data.ByteString                  (ByteString ())
-import qualified Data.ByteString as B             (empty, length)
+import qualified Data.ByteString as B             (length)
 import           Data.Word                        (Word16)
-import           Network.Socket                   (Socket ())
 import           System.IO                        (Handle ())
 
 -- | Low level representation of a ricochet packet
@@ -39,13 +36,8 @@ data ConnectionRole = Client | Server
   deriving (Eq, Show)
 
 -- | Representation of a connection between two ricochet peers
---   it consists of:
---
---    * open channels
---    * wether our ricochet instance is the client
 data Connection = MkConnection
   { _cHandle         :: Handle         -- ^ The handle to send and receive signals on
-  , _cChannels       :: [Channel]      -- ^ A list of the channels currently opened
   , _cInputBuffer    :: ByteString     -- ^ Buffered data that has not been parsed yet
   , _cConnectionRole :: ConnectionRole -- ^ The connection role of this side of the connection
   }
@@ -53,12 +45,6 @@ data Connection = MkConnection
 -- | Equality is defined by equality of the socket
 instance Eq Connection where
   a == b = _cHandle a == _cHandle b
-
--- | Creates an initial 'Connection' from a Handle
-makeConnection :: Handle -> ConnectionRole -> Connection
-makeConnection handle role = -- Start out with only a Control Channel
-  let channels = [MkChannel 0 $ MkChannelType "im.ricochet.control-channel"]
-  in  MkConnection handle channels B.empty role
 
 -- | Low level representation of a ricochet channel
 data Channel = MkChannel
