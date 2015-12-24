@@ -19,15 +19,17 @@ module Network.Ricochet.Protocol.Packets
 
 import           Prelude                    hiding (take)
 
-import           Network.Ricochet.Types     (Connection(..), Packet (..),
-                                             ParserResult (..), _Success,
-                                             cInputBuffer, makePacket)
+import           Network.Ricochet.Types     (Connection(..), Direction(..),
+                                             Packet (..), ParserResult (..),
+                                             _Success, cInputBuffer, makePacket,
+                                             pDirection)
 import           Network.Ricochet.Channel   (Channel, newChannel, readChannel,
                                              writeChannel)
 import           Network.Ricochet.Util      (anyWord16, lookWith, parserResult)
 
 import           Control.Concurrent         (forkIO, threadDelay)
-import           Control.Lens               (Prism', (^?), (.=), _1, prism')
+import           Control.Lens               (Prism', (^.), (^?), (.=), _1,
+                                             prism')
 import           Control.Monad              (forever, void)
 import           Control.Monad.IO.Class     (MonadIO (..))
 import           Control.Monad.State        (StateT (..), get, put, runStateT)
@@ -53,13 +55,14 @@ packetParser = do
   size <- anyWord16
   channel <- anyWord16
   packetData <- take (fromIntegral size - 4)
-  return $ MkPacket size channel packetData
+  return $ MkPacket size channel packetData Received
 
 -- | Serializes a Packet to yield it’s low-level representation
 dumpPacket :: Packet -> ByteString
-dumpPacket (MkPacket w1 w2 bs) = toStrict . toLazyByteString $ word16BE w1 <> word16BE w2 <> byteString bs
+dumpPacket (MkPacket w1 w2 bs _) = toStrict . toLazyByteString $ word16BE w1 <> word16BE w2 <> byteString bs
 
--- | Prism for parsing and dumping a packet
+-- | Prism for parsing and dumping packets.  This prism breaks the laws, since
+--   parsePacket assumes the packet is 'Received'.
 packet :: Prism' ByteString Packet
 packet = prism' dumpPacket ((^? _Success . _1) . parsePacket)
 
@@ -120,6 +123,8 @@ nextPacket = do
     Nothing -> liftIO (threadDelay delay) >> nextPacket
   where delay = round $ 10 ** 6
 
--- | Sends a Packet to a connected User
+-- | Sends a Packet on the given Handle, unless it is 'Received'.
 sendPacket :: Handle -> Packet -> IO ()
-sendPacket handle pkt = B.hPutStr handle $ dumpPacket pkt
+sendPacket handle pkt = case pkt ^. pDirection of
+  Sent -> B.hPutStr handle $ dumpPacket pkt
+  Received -> return ()

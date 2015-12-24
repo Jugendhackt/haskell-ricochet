@@ -23,13 +23,18 @@ data Packet = MkPacket
   { _pSize       :: Word16     -- ^ The size of the whole packet
   , _pChannelID  :: Word16     -- ^ The channel the packet should be sent on
   , _pPacketData :: ByteString -- ^ The actual packet payload
+  , _pDirection  :: Direction  -- ^ Whether the packet is sent or received
   } deriving (Eq, Show)
 
 -- | Creates a packet with appropriate size from a Channel and a ByteString
 makePacket :: Word16     -- ^ ID of the channel the packet should be sent on
            -> ByteString -- ^ The ByteString to be sent
            -> Packet     -- ^ Returns a sendable packet
-makePacket chan bs = MkPacket (4 + fromIntegral (B.length bs)) chan bs
+makePacket chan bs = MkPacket (4 + fromIntegral (B.length bs)) chan bs Sent
+
+-- | Whether some piece of data is sent or received
+data Direction = Sent | Received
+  deriving (Eq, Show)
 
 -- | The role of a peer in a Connection
 data ConnectionRole = Client | Server
