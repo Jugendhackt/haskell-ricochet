@@ -7,14 +7,16 @@ those not described via Google Protobuf), as well as splitting a ByteString into
 a series of Packets.
 -}
 
-{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE TupleSections #-}
 module Network.Ricochet.Protocol.Packets
   ( parsePacket
   , dumpPacket
   , splitIntoPackets
   , packet
   , newPacketChannel
+  , selectChannel
   ) where
 
 import           Prelude                    hiding (take)
@@ -22,14 +24,14 @@ import           Prelude                    hiding (take)
 import           Network.Ricochet.Types     (Connection(..), Direction(..),
                                              Packet (..), ParserResult (..),
                                              _Success, cInputBuffer, makePacket,
-                                             pDirection)
+                                             pChannelID, pDirection)
 import           Network.Ricochet.Channel   (Channel, newChannel, readChannel,
                                              writeChannel)
 import           Network.Ricochet.Util      (anyWord16, lookWith, parserResult)
 
 import           Control.Concurrent         (forkIO, threadDelay)
 import           Control.Lens               (Prism', (^.), (^?), (.=), _1,
-                                             prism')
+                                             filtered, prism')
 import           Control.Monad              (forever, void)
 import           Control.Monad.IO.Class     (MonadIO (..))
 import           Control.Monad.State        (StateT (..), get, put, runStateT)
@@ -128,3 +130,6 @@ sendPacket :: Handle -> Packet -> IO ()
 sendPacket handle pkt = case pkt ^. pDirection of
   Sent -> B.hPutStr handle $ dumpPacket pkt
   Received -> return ()
+
+selectChannel :: Word16 -> Prism' Packet Packet
+selectChannel n = filtered ((== n) . (^. pChannelID))
