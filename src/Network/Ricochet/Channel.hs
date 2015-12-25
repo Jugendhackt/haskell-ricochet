@@ -18,6 +18,7 @@ module Network.Ricochet.Channel
   , readChannel
   , writeChannel
   , transform
+  , transformRO
   , mergeChannel
   ) where
 
@@ -29,28 +30,36 @@ import Control.Applicative (Alternative(..))
 -- | A 'Channel' of the source type s, transformed to yield values of type a
 data Channel s a = MkChannel (Chan s) (APrism' s a)
 
--- | Helper function for creating source channels
-mkSource :: Chan s -> Channel s s
-mkSource = flip MkChannel (prism' id Just)
+-- | A 'ChannelRO' is a read-only 'Channel'.
+data ChannelRO s a = MkChannelRO (Chan s) (ATraversal' s a)
 
--- | Create a new, empty 'Channel'
-newChannel :: IO (Channel s s)
-newChannel = mkSource <$> newChan
+class ChannelLike c where
+  mkSource :: Chan s -> c s s
+  newChannel :: IO (c s s)
+  dupSource :: c s a -> IO (c s s)
+  dupChannel :: c s a -> IO (c s a)
+  readChannel :: c s a -> IO a
+  transformRO :: ATraversal' a b -> c s a -> ChannelRO s b
 
--- | Duplicate a 'Channel', yielding a 'Channel' transporting the source type.
-dupSource :: Channel s a -> IO (Channel s s)
-dupSource (MkChannel c _) = mkSource <$> dupChan c
+instance ChannelLike Channel where
+  mkSource = flip MkChannel id
+  newChannel = mkSource <$> newChan
+  dupSource (MkChannel c _) = mkSource <$> dupChan c
+  dupChannel (MkChannel chan p) = flip MkChannel p <$> dupChan chan
+  readChannel c@(MkChannel chan p) = (^? clonePrism p) <$> readChan chan >>= \case
+    Just v  -> return v
+    Nothing -> readChannel c
+  transformRO q (MkChannel chan p) = MkChannelRO chan (clonePrism p . cloneTraversal q)
 
--- | Duplicate a 'Channel'. Everything written on either on can be read on both
---   of them from now on.
-dupChannel :: Channel s a -> IO (Channel s a)
-dupChannel (MkChannel chan p) = flip MkChannel p <$> dupChan chan
-
--- | Read the next value from a 'Channel'
-readChannel :: Channel s a -> IO a
-readChannel c@(MkChannel chan p) = (^? clonePrism p) <$> readChan chan >>= \case
-                        Just v  -> return v
-                        Nothing -> readChannel c
+instance ChannelLike ChannelRO where
+  mkSource = flip MkChannelRO id
+  newChannel = mkSource <$> newChan
+  dupSource (MkChannelRO c _) = mkSource <$> dupChan c
+  dupChannel (MkChannelRO chan p) = flip MkChannelRO p <$> dupChan chan
+  readChannel c@(MkChannelRO chan p) = (^? cloneTraversal p) <$> readChan chan >>= \case
+    Just v  -> return v
+    Nothing -> readChannel c
+  transformRO q (MkChannelRO chan p) = MkChannelRO chan (cloneTraversal p . cloneTraversal q)
 
 -- | Write a value to a 'Channel'
 writeChannel :: Channel s a -> a -> IO ()
