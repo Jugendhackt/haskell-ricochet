@@ -121,7 +121,9 @@ nextPacket :: StateT Connection IO Packet
 nextPacket = do
   maybePacket <- peekPacket
   case maybePacket of
-    Just pkt -> return pkt
+    Just pkt -> do
+      liftIO $ print pkt
+      return pkt
     Nothing -> liftIO (threadDelay delay) >> nextPacket
   where delay = round $ 10 ** 6
 
