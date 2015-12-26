@@ -37,13 +37,13 @@ import           Data.Text                        (Text)
 
 -- | Request a hidden service @onion@ domain to be added to the recipient’s
 --   contact list.  This will usually prompt the recipient user.
-contact_request :: Traversal' OpenChannel CR.ContactRequest
-contact_request = ext CRE._contact_request . _Just
+contact_request :: Traversal' OpenChannel (Maybe CR.ContactRequest)
+contact_request = ext CRE._contact_request
 
 -- | Respond to a contact request, informing the recipient in what status the
 --   request is.
-response :: Traversal' ChannelResult R.Response
-response = ext CRE._response . _Just
+response :: Traversal' ChannelResult (Maybe R.Response)
+response = ext CRE._response
 
 -- | An optional nickname included in the contact request, that will be shown to
 --   the recipient user.  It is limited to 'nicknameMaxCharacters' characters.
