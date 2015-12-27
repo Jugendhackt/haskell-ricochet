@@ -50,13 +50,13 @@ server_cookie = ext _server_cookie
 
 -- | If the 'AP.Packet' came from the client, it /must/ contain a 'Proof'.  It
 --   is used to prove the ownership of a hidden service to the server.
-proof :: Traversal' AP.Packet (Maybe AO.Proof)
+proof :: Lens' AP.Packet (Maybe AO.Proof)
 proof = AP.proof
 
 -- | If the 'AP.Packet' came from the server, it /must/ contain a 'Result'.  It
 --   is used to tell the client whether it’s proof has been accepted, and
 --   whether the hidden service is a known contact.
-result :: Traversal' AP.Packet (Maybe AR.Result)
+result :: Lens' AP.Packet (Maybe AR.Result)
 result = AP.result
 
 -- | The public key corresponding to the hidden service the client wants to

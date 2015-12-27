@@ -35,14 +35,14 @@ import           Text.ProtocolBuffers
 
 -- | Only the initiator of the channel should send a packet where this traversal
 --   yields a result.  It contains a message composed by the user.
-chat_message :: Traversal' CP.Packet CM.ChatMessage
-chat_message = CP.chat_message . _Just
+chat_message :: Lens' CP.Packet (Maybe CM.ChatMessage)
+chat_message = CP.chat_message
 
 -- | Only the non-initiator of the channel should send a packet where this
 --   traversal yields a result.  It contains an acknowledgement that a message
 --   has been received.
-chat_acknowledge :: Traversal' CP.Packet CA.ChatAcknowledge
-chat_acknowledge = CP.chat_acknowledge . _Just
+chat_acknowledge :: Lens' CP.Packet (Maybe CA.ChatAcknowledge)
+chat_acknowledge = CP.chat_acknowledge
 
 class HasMessageId m where
   -- | We use the typeclass 'HasMessageId' because both 'CM.ChatMessage' and
