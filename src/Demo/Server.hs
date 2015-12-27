@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Main where
 
@@ -27,17 +28,25 @@ import Network.Ricochet.Crypto (hmacSHA256, publicDER, rawRSAVerify, torDomain)
 import Network.Ricochet.Types (ChannelType(..), Connection(..),
          ConnectionRole(..), Packet, makePacket, pChannelID, pPacketData)
 
-import Control.Concurrent (forkIO)
-import Control.Lens ((&), (#), (.~), (^.), (^?), (^?!), _Just, filtered, re, strict)
+import Control.Concurrent (ThreadId, forkIO)
+import Control.Concurrent.MVar (MVar, newEmptyMVar, putMVar)
+import Control.Lens (ATraversal', (&), (#), (.~), (^.), (^?), (^?!), _Just,
+         filtered, re, strict, makeLenses, use, view)
 import Control.Monad (void)
+import Control.Monad.Reader
 import Control.Monad.State
 import Control.Monad.IO.Class (liftIO)
+import Data.Word (Word16)
 import Data.Monoid
 import Network
-
-tr c p = dupChannel c >>= \c' -> readChannel $ transformRO p c'
+import Text.ProtocolBuffers (Wire, ReflectDescriptor)
 
 ourTorDomain = "m2chfjihyvrcmn4i"
+
+data Stuff = MkStuff { _chan :: Channel Packet Packet
+                     , _chatChan :: MVar () }
+
+makeLenses ''Stuff
 
 main = do
   connection <- waitForConnection (PortNumber 5000)
@@ -47,44 +56,48 @@ main = do
       Nothing -> error "We don’t have any version in common with the client"
       Just 1 -> do
         liftIO $ putStrLn "Version 1 chosen"
-        chan <- get >>= liftIO . newPacketChannel
-        liftIO . forkIO . void $ channelResult chan
-        liftIO $ openChannel chan
+        c <- get >>= liftIO . newPacketChannel
+        cc <- liftIO newEmptyMVar
+        let stat = MkStuff c cc
+        liftIO . forkIO . void $ runReaderT channelResult stat
+        liftIO $ runReaderT openChannel stat
         liftIO $ putStrLn "we should never get here"
 
-channelResult :: Channel Packet Packet -> IO a
-channelResult chan = forever $ do
-  val <- tr chan $ selectChannel 0 . pPacketData . msg . channel_result . _Just
+channelResult :: ReaderT Stuff IO a
+channelResult = forever $ do
+  val <- tr $ selectChannel 0 . pPacketData . msg . channel_result . _Just
   case val ^. channel_identifier of
-    2 -> do 
-      putStrLn "Channel 2 opened!"
+    2 -> do
+      liftIO $ putStrLn "Channel 2 opened!"
+      cc <- view chatChan
+      liftIO $ putMVar cc ()
 
-openChannel :: Channel Packet Packet -> IO a
-openChannel chan = forever $ do
-  val <- tr chan $ selectChannel 0 . pPacketData . msg . open_channel . _Just
+openChannel :: ReaderT Stuff IO a
+openChannel = forever $ do
+  val <- tr $ selectChannel 0 . pPacketData . msg . open_channel . _Just
   case val ^?! channel_type of
     MkChannelType "im.ricochet.auth.hidden-service" -> do
-      void . forkIO $ authHiddenService chan val
+      void . frk $ authHiddenService val
     MkChannelType "im.ricochet.contact.request" -> do
-      void . forkIO $ contactRequest chan val
+      void . frk $ contactRequest val
     MkChannelType "im.ricochet.chat" -> do
-      void . forkIO $ chat chan val
+      void . frk $ chat val
     MkChannelType c -> do
-      putStrLn $ "Unknown channel type " <> show c
+      liftIO . putStrLn $ "Unknown channel type " <> show c
 
-authHiddenService :: Channel Packet Packet -> OpenChannel -> IO ()
-authHiddenService chan o = do
+authHiddenService :: OpenChannel -> ReaderT Stuff IO ()
+authHiddenService o = do
   case o ^? client_cookie of
     Nothing -> do
-      putStrLn "No client cookie provided!"
+      liftIO $ putStrLn "No client cookie provided!"
     Just cookie -> do
       let r :: Control.Packet = d & channel_result .~ Just
                (d & channel_identifier .~ (o ^. channel_identifier)
                   & opened .~ True
                   & common_error .~ Nothing
                   & server_cookie .~ cookie) -- TODO: Generate a random cookie
-      writeChannel chan . makePacket 0 $ msg # r
-      p <- tr chan $ selectChannel (o ^. channel_identifier) . pPacketData . msg . proof . _Just
+      wr 0 r
+      p <- tr $ selectChannel (o ^. channel_identifier) . pPacketData . msg . proof . _Just
       case (p ^? public_key . publicDER, p ^? signature) of
         (Just publicKey, Just signature) -> do
           let theirTorDomain = torDomain $ publicKey
@@ -92,44 +105,44 @@ authHiddenService chan o = do
           let prf = hmacSHA256 (cookie' <> cookie') (theirTorDomain <> ourTorDomain)
           case rawRSAVerify publicKey prf signature of
             True -> do
-              putStrLn "Success!"
+              liftIO $ putStrLn "Success!"
               let r :: Auth.Packet = d & result .~ Just
                        (d & accepted .~ True
                           & is_known_contact .~ Just False)
-              writeChannel chan . makePacket (o ^. channel_identifier) $ msg # r
-            False -> putStrLn "Failure!"
-        _ -> putStrLn "Public key or signature missing!"
+              wr (o ^. channel_identifier) r
+            False -> liftIO $ putStrLn "Failure!"
+        _ -> liftIO $ putStrLn "Public key or signature missing!"
 
-contactRequest :: Channel Packet Packet -> OpenChannel -> IO ()
-contactRequest chan o = do
+contactRequest :: OpenChannel -> ReaderT Stuff IO ()
+contactRequest o = do
   case o ^? contact_request of
-    Nothing -> putStrLn "No contact request provided!"
+    Nothing -> liftIO $ putStrLn "No contact request provided!"
     Just req -> do
-      print req
+      liftIO $ print req
       let r :: Control.Packet = d & channel_result .~ Just
                (d & response .~ Just (d & status .~ Accepted)
                   & opened .~ True
                   & common_error .~ Nothing
                   & channel_identifier .~ (o ^. channel_identifier))
-      writeChannel chan . makePacket 0 $ msg # r
+      wr 0 r
 
-chat :: Channel Packet Packet -> OpenChannel -> IO a
-chat chan o = do
+chat :: OpenChannel -> ReaderT Stuff IO a
+chat o = do
   let r :: Control.Packet = d & channel_result .~ Just
            (d & opened .~ True
               & common_error .~ Nothing
               & channel_identifier .~ (o ^. channel_identifier))
-  writeChannel chan . makePacket 0 $ msg # r
+  wr 0 r
   let o' :: Control.Packet = d & open_channel .~ Just
             (d & channel_identifier .~ 2
                & channel_type .~ MkChannelType "im.ricochet.chat")
-  writeChannel chan . makePacket 0 $ msg # o'
+  wr 0 o'
   forever $ do
-    val <- tr chan $ selectChannel (o ^. channel_identifier) . pPacketData . msg . chat_message . _Just
+    val <- tr $ selectChannel (o ^. channel_identifier) . pPacketData . msg . chat_message . _Just
     let a :: Chat.Packet = d & chat_acknowledge .~ Just
              (d & message_id .~ val ^. message_id)
-    writeChannel chan . makePacket (o ^. channel_identifier) $ msg # a
-    print val
+    wr (o ^. channel_identifier) a
+    liftIO $ print val
 
 waitForConnection :: PortID -> IO Connection
 waitForConnection port = do
@@ -137,3 +150,12 @@ waitForConnection port = do
   (handle, hostname, portNumber) <- accept socket
   putStrLn $ "Client connected: " <> hostname <> ", port " <> show portNumber
   return $ MkConnection handle "" Server
+
+tr :: ATraversal' Packet a -> ReaderT Stuff IO a
+tr p = view chan >>= liftIO . dupChannel >>= liftIO . readChannel . transformRO p
+
+wr :: (ReflectDescriptor msg, Wire msg) => Word16 -> msg -> ReaderT Stuff IO ()
+wr i m = view chan >>= \c -> liftIO . writeChannel c . makePacket i $ msg # m
+
+frk :: ReaderT r IO () -> ReaderT r IO ThreadId
+frk x = ask >>= liftIO . forkIO . runReaderT x

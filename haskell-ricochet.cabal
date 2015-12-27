@@ -80,4 +80,5 @@ executable server
                      , haskell-ricochet
                      , lens
                      , transformers
+                     , protocol-buffers
   default-language:    Haskell2010
