@@ -1,10 +1,8 @@
 import           Distribution.Simple
 
-import           Control.Applicative         ((<$>))
 import           Control.Monad               (liftM2)
 import           Control.Monad.Reader        (ReaderT(..))
 import           Data.Function               (on)
-import           Data.Monoid                 ((<>))
 import           System.Process              (callProcess)
 
 runHprotoc = callProcess "hprotoc"
@@ -21,8 +19,12 @@ runHprotoc = callProcess "hprotoc"
 preConfHook = preConf simpleUserHooks `combine` const (const (runHprotoc >> return mempty))
 main = defaultMainWithHooks $ simpleUserHooks { preConf = preConfHook }
 
-combine' :: (Monad m, Monoid b) => (a -> m b) -> (a -> m b) -> (a -> m b)
-combine' = (fmap runReaderT . liftM2 (<>)) `on` ReaderT
+combine :: (Monad m, Monoid c) => (a -> b -> m c) -> (a -> b -> m c) -> (a -> b -> m c)
+combine = curry ... combine' `on` uncurry
 
-combine :: (Monad m, Monoid c) => (a -> b -> m c) -> (a -> b -> m c) -> a -> b -> m c
-combine = fmap curry <$> combine' `on` uncurry
+combine' :: (Monad m, Monoid b) => (a -> m b) -> (a -> m b) -> (a -> m b)
+combine' = runReaderT ... liftM2 mappend `on` ReaderT
+
+infixr 9 ...
+(...) :: (c -> d) -> (a -> b -> c) -> (a -> b -> d)
+(...) = (.) . (.)
