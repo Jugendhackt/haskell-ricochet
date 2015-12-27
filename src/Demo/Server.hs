@@ -12,7 +12,7 @@ import Network.Ricochet.Protocol.Protobuf.AuthHiddenService (accepted,
 import qualified Network.Ricochet.Protocol.Protobuf.AuthHiddenService as Auth
          (Packet)
 import Network.Ricochet.Protocol.Protobuf.Chat (chat_acknowledge, chat_message,
-         message_id)
+         message_id, message_text)
 import qualified Network.Ricochet.Protocol.Protobuf.Chat as Chat (Packet)
 import Network.Ricochet.Protocol.Protobuf.ContactRequest (ContactRequest,
          Response, Status(..), contact_request, response, status)
@@ -26,12 +26,13 @@ import Network.Ricochet.Channel (Channel, dupChannel, readChannel, transformRO,
          writeChannel)
 import Network.Ricochet.Crypto (hmacSHA256, publicDER, rawRSAVerify, torDomain)
 import Network.Ricochet.Types (ChannelType(..), Connection(..),
-         ConnectionRole(..), Packet, makePacket, pChannelID, pPacketData)
+         ConnectionRole(..), Direction(..), Packet, makePacket, pChannelID,
+         pDirection, pPacketData)
 
 import Control.Concurrent (ThreadId, forkIO)
-import Control.Concurrent.MVar (MVar, newEmptyMVar, putMVar)
+import Control.Concurrent.MVar (MVar, takeMVar, newEmptyMVar, putMVar)
 import Control.Lens (ATraversal', (&), (#), (.~), (^.), (^?), (^?!), _Just,
-         filtered, re, strict, makeLenses, use, view)
+         filtered, re, reversed, strict, makeLenses, use, view)
 import Control.Monad (void)
 import Control.Monad.Reader
 import Control.Monad.State
@@ -71,10 +72,11 @@ channelResult = forever $ do
       liftIO $ putStrLn "Channel 2 opened!"
       cc <- view chatChan
       liftIO $ putMVar cc ()
+    _ -> return ()
 
 openChannel :: ReaderT Stuff IO a
 openChannel = forever $ do
-  val <- tr $ selectChannel 0 . pPacketData . msg . open_channel . _Just
+  val <- tr $ selectChannel 0 . filtered ((== Received) . (^. pDirection)) . pPacketData . msg . open_channel . _Just
   case val ^?! channel_type of
     MkChannelType "im.ricochet.auth.hidden-service" -> do
       void . frk $ authHiddenService val
@@ -137,12 +139,16 @@ chat o = do
             (d & channel_identifier .~ 2
                & channel_type .~ MkChannelType "im.ricochet.chat")
   wr 0 o'
+  view chatChan >>= liftIO . takeMVar
   forever $ do
     val <- tr $ selectChannel (o ^. channel_identifier) . pPacketData . msg . chat_message . _Just
     let a :: Chat.Packet = d & chat_acknowledge .~ Just
              (d & message_id .~ val ^. message_id)
     wr (o ^. channel_identifier) a
     liftIO $ print val
+    let m :: Chat.Packet = d & chat_message .~ Just
+             (d & message_text .~ (val ^. message_text . reversed))
+    wr 2 m
 
 waitForConnection :: PortID -> IO Connection
 waitForConnection port = do
