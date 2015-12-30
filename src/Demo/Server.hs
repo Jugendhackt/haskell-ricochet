@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Main where
@@ -93,12 +92,11 @@ authHiddenService o = do
     Nothing -> do
       liftIO $ putStrLn "No client cookie provided!"
     Just cookie -> do
-      let r :: Control.Packet = d & channel_result .~ Just
-               (d & channel_identifier .~ (o ^. channel_identifier)
-                  & opened .~ True
-                  & common_error .~ Nothing
-                  & server_cookie .~ cookie) -- TODO: Generate a random cookie
-      wr 0 r
+      wr 0 $ d & channel_result .~ Just
+                 (d & channel_identifier .~ (o ^. channel_identifier)
+                    & opened .~ True
+                    & common_error .~ Nothing
+                    & server_cookie .~ cookie) -- TODO: Generate a random cookie
       p <- tr $ selectChannel (o ^. channel_identifier) . pPacketData . msg . proof . _Just
       case (p ^? public_key . publicDER, p ^? signature) of
         (Just publicKey, Just signature) -> do
@@ -108,10 +106,9 @@ authHiddenService o = do
           case rawRSAVerify publicKey prf signature of
             True -> do
               liftIO $ putStrLn "Success!"
-              let r :: Auth.Packet = d & result .~ Just
-                       (d & accepted .~ True
-                          & is_known_contact .~ Just False)
-              wr (o ^. channel_identifier) r
+              wr (o ^. channel_identifier) $ d & result .~ Just
+                                                 (d & accepted .~ True
+                                                    & is_known_contact .~ Just False)
             False -> liftIO $ putStrLn "Failure!"
         _ -> liftIO $ putStrLn "Public key or signature missing!"
 
@@ -121,34 +118,29 @@ contactRequest o = do
     Nothing -> liftIO $ putStrLn "No contact request provided!"
     Just req -> do
       liftIO $ print req
-      let r :: Control.Packet = d & channel_result .~ Just
-               (d & response .~ Just (d & status .~ Accepted)
-                  & opened .~ True
-                  & common_error .~ Nothing
-                  & channel_identifier .~ (o ^. channel_identifier))
-      wr 0 r
+      wr 0 $ d & channel_result .~ Just
+                 (d & response .~ Just (d & status .~ Accepted)
+                    & opened .~ True
+                    & common_error .~ Nothing
+                    & channel_identifier .~ (o ^. channel_identifier))
 
 chat :: OpenChannel -> ReaderT Stuff IO a
 chat o = do
-  let r :: Control.Packet = d & channel_result .~ Just
-           (d & opened .~ True
-              & common_error .~ Nothing
-              & channel_identifier .~ (o ^. channel_identifier))
-  wr 0 r
-  let o' :: Control.Packet = d & open_channel .~ Just
-            (d & channel_identifier .~ 2
-               & channel_type .~ MkChannelType "im.ricochet.chat")
-  wr 0 o'
+  wr 0 $ d & channel_result .~ Just
+             (d & opened .~ True
+                & common_error .~ Nothing
+                & channel_identifier .~ (o ^. channel_identifier))
+  wr 0 $ d & open_channel .~ Just
+             (d & channel_identifier .~ 2
+                & channel_type .~ MkChannelType "im.ricochet.chat")
   view chatChan >>= liftIO . takeMVar
   forever $ do
     val <- tr $ selectChannel (o ^. channel_identifier) . pPacketData . msg . chat_message . _Just
-    let a :: Chat.Packet = d & chat_acknowledge .~ Just
-             (d & message_id .~ val ^. message_id)
-    wr (o ^. channel_identifier) a
+    wr (o ^. channel_identifier) $ d & chat_acknowledge .~ Just
+                                       (d & message_id .~ val ^. message_id)
     liftIO $ print val
-    let m :: Chat.Packet = d & chat_message .~ Just
-             (d & message_text .~ (val ^. message_text . reversed))
-    wr 2 m
+    wr 2 $ d & chat_message .~ Just
+               (d & message_text .~ (val ^. message_text . reversed))
 
 waitForConnection :: PortID -> IO Connection
 waitForConnection port = do
