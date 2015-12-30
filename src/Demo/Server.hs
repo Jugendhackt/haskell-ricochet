@@ -74,18 +74,18 @@ channelResult = forever $ do
       liftIO $ putMVar cc ()
     _ -> return ()
 
-openChannel :: ReaderT Stuff IO a
-openChannel = forever $ do
-  val <- tr $ selectChannel 0 . filtered ((== Received) . (^. pDirection)) . pPacketData . msg . open_channel . _Just
-  case val ^?! channel_type of
-    MkChannelType "im.ricochet.auth.hidden-service" -> do
-      void . frk $ authHiddenService val
-    MkChannelType "im.ricochet.contact.request" -> do
-      void . frk $ contactRequest val
-    MkChannelType "im.ricochet.chat" -> do
-      void . frk $ chat val
-    MkChannelType c -> do
-      liftIO . putStrLn $ "Unknown channel type " <> show c
+openChannel :: ReaderT Stuff IO ()
+openChannel = void $ do
+  frk $ openChannelHandler (MkChannelType "im.ricochet.auth.hidden-service") authHiddenService
+  frk $ openChannelHandler (MkChannelType "im.ricochet.contact.request") contactRequest
+  openChannelHandler (MkChannelType "im.ricochet.chat") chat
+
+openChannelHandler :: ChannelType -> (OpenChannel -> ReaderT Stuff IO ()) -> ReaderT Stuff IO a
+openChannelHandler t f = forever $ do
+  val <- tr $ selectChannel 0 . filtered ((== Received) . (^. pDirection)) .
+       pPacketData . msg . open_channel . _Just .
+       filtered ((== Just t) . (^? channel_type))
+  void . frk $ f val
 
 authHiddenService :: OpenChannel -> ReaderT Stuff IO ()
 authHiddenService o = do
