@@ -73,12 +73,15 @@ executable server
   main-is:             src/Demo/Server.hs
   build-depends:       base
                      , base32string
-                     , mtl
-                     , containers
                      , bytestring
-                     , network
+                     , containers
                      , haskell-ricochet
+                     , HsOpenSSL
+                     , mtl
+                     , network
                      , lens
                      , transformers
                      , protocol-buffers
+                     , network-anonymous-tor
+                     , text
   default-language:    Haskell2010

@@ -23,7 +23,8 @@ import qualified Network.Ricochet.Protocol.Protobuf.ControlChannel as Control
 import Network.Ricochet.Protocol.Version
 import Network.Ricochet.Channel (Channel, dupChannel, readChannel, transformRO,
          writeChannel)
-import Network.Ricochet.Crypto (hmacSHA256, publicDER, rawRSAVerify, torDomain)
+import Network.Ricochet.Crypto (base64, generate1024BitRSA, hmacSHA256,
+         privateDER, publicDER, rawRSAVerify, torDomain)
 import Network.Ricochet.Types (ChannelType(..), Connection(..),
          ConnectionRole(..), Direction(..), Packet, makePacket, pChannelID,
          pDirection, pPacketData)
@@ -36,32 +37,44 @@ import Control.Monad (void)
 import Control.Monad.Reader
 import Control.Monad.State
 import Control.Monad.IO.Class (liftIO)
+import Data.Base32String.Default (toText)
+import Data.ByteString (ByteString)
+import qualified Data.ByteString as B (putStrLn)
+import Data.Text (toLower)
+import Data.Text.Encoding (encodeUtf8)
 import Data.Word (Word16)
 import Data.Monoid
 import Network
+import Network.Anonymous.Tor (withSession, mapOnion)
+import OpenSSL.RSA (RSAKeyPair)
 import Text.ProtocolBuffers (Wire, ReflectDescriptor)
 
-ourTorDomain = "m2chfjihyvrcmn4i"
-
 data Stuff = MkStuff { _chan :: Channel Packet Packet
-                     , _chatChan :: MVar () }
+                     , _chatChan :: MVar ()
+                     , _ourDomain :: ByteString
+                     , _ourKey :: RSAKeyPair }
 
 makeLenses ''Stuff
 
 main = do
-  connection <- waitForConnection (PortNumber 5000)
-  flip runStateT connection $ do
-    v <- pickVersion [1]
-    case v of
-      Nothing -> error "We don’t have any version in common with the client"
-      Just 1 -> do
-        liftIO $ putStrLn "Version 1 chosen"
-        c <- get >>= liftIO . newPacketChannel
-        cc <- liftIO newEmptyMVar
-        let stat = MkStuff c cc
-        liftIO . forkIO . void $ runReaderT channelResult stat
-        liftIO $ runReaderT openChannel stat
-        liftIO $ putStrLn "we should never get here"
+  key <- generate1024BitRSA
+  let encodedKey = base64 . privateDER # key
+  void . withSession 9051 $ \ctrlSock -> do
+    address <- encodeUtf8 . toLower . toText <$> mapOnion ctrlSock 9878 5000 False (Just encodedKey)
+    B.putStrLn $ "Our hidden domain address is: " <> address
+    connection <- waitForConnection (PortNumber 5000)
+    flip runStateT connection $ do
+      v <- pickVersion [1]
+      case v of
+        Nothing -> error "We don’t have any version in common with the client"
+        Just 1 -> do
+          liftIO $ putStrLn "Version 1 chosen"
+          c <- get >>= liftIO . newPacketChannel
+          cc <- liftIO newEmptyMVar
+          let stat = MkStuff c cc address key
+          liftIO . forkIO . void $ runReaderT channelResult stat
+          liftIO $ runReaderT openChannel stat
+          liftIO $ putStrLn "we should never get here"
 
 channelResult :: ReaderT Stuff IO a
 channelResult = forever $ do
@@ -102,7 +115,8 @@ authHiddenService o = do
         (Just publicKey, Just signature) -> do
           let theirTorDomain = torDomain $ publicKey
           let cookie' = cookie ^?! _Just . strict
-          let prf = hmacSHA256 (cookie' <> cookie') (theirTorDomain <> ourTorDomain)
+          ourDom <- view ourDomain
+          let prf = hmacSHA256 (cookie' <> cookie') (theirTorDomain <> ourDom)
           case rawRSAVerify publicKey prf signature of
             True -> do
               liftIO $ putStrLn "Success!"
