@@ -63,7 +63,7 @@ instance Eq Channel where
 
 -- | The type of a channel is preliminarily represented by a ByteString for extensibility
 data ChannelType = MkChannelType Text
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 -- | A contact, defined by his ID (Tor hidden service address without the .onion and the 'ricochet:' prefix) and his display name
 data Contact = MkContact
@@ -96,3 +96,4 @@ makeLenses ''Channel
 makeLenses ''Contact
 makeLenses ''ContactApproval
 makePrisms ''ParserResult
+makePrisms ''ChannelType

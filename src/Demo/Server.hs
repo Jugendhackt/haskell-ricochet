@@ -26,26 +26,29 @@ import Network.Ricochet.Channel (Channel, dupChannel, readChannel, transformRO,
 import Network.Ricochet.Crypto (base64, generate1024BitRSA, hmacSHA256,
          privateDER, publicDER, rawRSAVerify, torDomain)
 import Network.Ricochet.Types (ChannelType(..), Connection(..),
-         ConnectionRole(..), Direction(..), Packet, makePacket, pChannelID,
-         pDirection, pPacketData)
+         ConnectionRole(..), Direction(..), Packet, _MkChannelType, makePacket,
+         pChannelID, pDirection, pPacketData)
 
 import Control.Concurrent (ThreadId, forkIO)
 import Control.Concurrent.MVar (MVar, takeMVar, newEmptyMVar, putMVar)
-import Control.Lens (ATraversal', (&), (#), (.~), (^.), (^?), (^?!), _Just,
-         filtered, re, reversed, strict, makeLenses, use, view)
-import Control.Monad (void)
-import Control.Monad.Reader
-import Control.Monad.State
+import Control.Lens (ATraversal', (<&>), (&), (#), (.~), (^.), (^?), (^?!),
+         _Just, filtered, lazy, re, reversed, strict, to, makeLenses, use, view)
+import Control.Lens.Extras (is)
+import Control.Monad (forever, forM, void)
+import Control.Monad.Reader (ReaderT, ask, runReaderT)
+import Control.Monad.State (get, runStateT)
 import Control.Monad.IO.Class (liftIO)
 import Data.Base32String.Default (toText)
 import Data.ByteString (ByteString)
-import qualified Data.ByteString as B (putStrLn)
-import Data.Text (toLower)
+import qualified Data.ByteString.Char8 as B (putStrLn)
+import Data.Text (Text, toLower)
+import qualified Data.Text.IO as T (putStrLn)
 import Data.Text.Encoding (encodeUtf8)
 import Data.Word (Word16)
 import Data.Monoid
 import Network
 import Network.Anonymous.Tor (withSession, mapOnion)
+import OpenSSL.Random (randBytes)
 import OpenSSL.RSA (RSAKeyPair)
 import Text.ProtocolBuffers (Wire, ReflectDescriptor)
 
@@ -88,15 +91,17 @@ channelResult = forever $ do
 
 openChannel :: ReaderT Stuff IO ()
 openChannel = void $ do
-  frk $ openChannelHandler (MkChannelType "im.ricochet.auth.hidden-service") authHiddenService
-  frk $ openChannelHandler (MkChannelType "im.ricochet.contact.request") contactRequest
-  openChannelHandler (MkChannelType "im.ricochet.chat") chat
+  forM [ ("im.ricochet.auth.hidden-service", authHiddenService)
+       , ("im.ricochet.contact.request", contactRequest)
+       , ("im.ricochet.chat", chat) ] $ frk . uncurry (openChannelHandler . (==))
+  openChannelHandler (const True) $ \openChannel ->
+    liftIO . T.putStrLn $ "OpenChannel " <> openChannel ^. channel_type . _MkChannelType
 
-openChannelHandler :: ChannelType -> (OpenChannel -> ReaderT Stuff IO ()) -> ReaderT Stuff IO a
+openChannelHandler :: (Text -> Bool) -> (OpenChannel -> ReaderT Stuff IO ()) -> ReaderT Stuff IO a
 openChannelHandler t f = forever $ do
   val <- tr $ selectChannel 0 . filtered ((== Received) . (^. pDirection)) .
        pPacketData . msg . open_channel . _Just .
-       filtered ((== Just t) . (^? channel_type))
+       filtered ((is $ _Just . filtered t) . (^? channel_type . _MkChannelType))
   void . frk $ f val
 
 authHiddenService :: OpenChannel -> ReaderT Stuff IO ()
@@ -104,19 +109,21 @@ authHiddenService o = do
   case o ^? client_cookie of
     Nothing -> do
       liftIO $ putStrLn "No client cookie provided!"
-    Just cookie -> do
+    Just clientCookie -> do
+      serverCookie <- liftIO $ randBytes 16 <&> (^? lazy)
       wr 0 $ d & channel_result .~ Just
                  (d & channel_identifier .~ (o ^. channel_identifier)
                     & opened .~ True
                     & common_error .~ Nothing
-                    & server_cookie .~ cookie) -- TODO: Generate a random cookie
+                    & server_cookie .~ serverCookie)
       p <- tr $ selectChannel (o ^. channel_identifier) . pPacketData . msg . proof . _Just
       case (p ^? public_key . publicDER, p ^? signature) of
         (Just publicKey, Just signature) -> do
-          let theirTorDomain = torDomain $ publicKey
-          let cookie' = cookie ^?! _Just . strict
-          ourDom <- view ourDomain
-          let prf = hmacSHA256 (cookie' <> cookie') (theirTorDomain <> ourDom)
+          let clientDomain = torDomain $ publicKey
+          serverDomain <- view ourDomain
+          let clientCookie' = clientCookie ^?! _Just . strict
+          let serverCookie' = serverCookie ^?! _Just . strict
+          let prf = hmacSHA256 (clientCookie' <> serverCookie') (clientDomain <> serverDomain)
           case rawRSAVerify publicKey prf signature of
             True -> do
               liftIO $ putStrLn "Success!"
@@ -131,7 +138,6 @@ contactRequest o = do
   case o ^? contact_request of
     Nothing -> liftIO $ putStrLn "No contact request provided!"
     Just req -> do
-      liftIO $ print req
       wr 0 $ d & channel_result .~ Just
                  (d & response .~ Just (d & status .~ Accepted)
                     & opened .~ True
@@ -152,7 +158,7 @@ chat o = do
     val <- tr $ selectChannel (o ^. channel_identifier) . pPacketData . msg . chat_message . _Just
     wr (o ^. channel_identifier) $ d & chat_acknowledge .~ Just
                                        (d & message_id .~ val ^. message_id)
-    liftIO $ print val
+    liftIO . T.putStrLn $ "Received chat message: " <> val ^. message_text
     wr 2 $ d & chat_message .~ Just
                (d & message_text .~ (val ^. message_text . reversed))
 
