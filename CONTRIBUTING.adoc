@@ -8,16 +8,23 @@ sternenseemann
 
 === Pulling & Pushing
 
-__Always__ use `git pull --rebase origin <branch>`! Always! If you have uncommited local changes `git stash` them. This will prevent ugly merge-commits in our `git log` and the need to interactively rebase from time to time.
+__Always__ use `git pull --rebase origin <branch>`! Always! If you have
+uncommited local changes `git stash` them. This will prevent ugly merge-commits
+in our `git log` and the need to interactively rebase from time to time.
 
 === Committing
 
-* Think before you commit! Do not commit incomplete changes. Check wether you are commiting on the right branch.
-* Run `cabal configure && cabal build` before you commit! Add new dependencies to `ricochet-haskell.cabal`. Fix compilation errors.
-* Split your changes into meaningful commits! If you have got unrelated changes in a file, use `git add -p <file>` to split these into separate commits.
-* Write meaningful, grammatically correct commit messages! Use the additional lines to write down all important aspects of the commit.
+* Think before you commit! Do not commit incomplete changes. Check wether you
+  are commiting on the right branch.
+* Run `cabal configure && cabal build` before you commit! Add new dependencies
+  to `ricochet-haskell.cabal`. Fix compilation errors.
+* Split your changes into meaningful commits! If you have got unrelated changes
+  in a file, use `git add -p <file>` to split these into separate commits.
+* Write meaningful, grammatically correct commit messages! Use the additional
+  lines to write down all important aspects of the commit.
 
-Tip: If you have commited on the wrong branch, but not pushed yet you can do this:
+Tip: If you have commited on the wrong branch, but not pushed yet you can do
+this:
 
 [source,shell]
 ----
@@ -33,9 +40,11 @@ See also: http://chris.beams.io/posts/git-commit/[Git commit]
 
 Create a new branch for every new feature or bigger change you develop!
 
-Smaller changes can be made on the master branch if you are sure that they won't conflict with anyone's changes.
+Smaller changes can be made on the master branch if you are sure that they won't
+conflict with anyone's changes.
 
-We don't have notion of stability yet but code on the master branch should compile at least.
+We don't have notion of stability yet but code on the master branch should
+compile at least.
 
 == Code
 
@@ -43,17 +52,23 @@ We don't have notion of stability yet but code on the master branch should compi
 * Use meaningful type names.
 * Write as much functional code as possible
 * Use two spaces as indentation.
-* Write haddock documentation comments (Make sure the text of multiline comments forms a neat block)
+* Write haddock documentation comments (Make sure the text of multiline comments
+  forms a neat block)
+* Use exact import declarations (example: `import Control.Monad (void,
+  forever)`)
+* Try to keep your lines shorter than 81 characters.
 * …
 
 == Communication
 
-Please talk to the people! If everything is coordinated well, development will be much easier.
+Please talk to the people! If everything is coordinated well, development will
+be much easier.
 
 These are the two communication channels we use:
 
 * Github issues for in depth discussion of concrete problems
-* IRC (`#ricochet` on freenode) for pretty much everything else (ranging from technical to more general to off-topic discussion)
+* IRC (`#ricochet` on freenode) for pretty much everything else (ranging from
+  technical to more general to off-topic discussion)
 
 Please be friendly! The following things are not acceptable:
 
@@ -65,11 +80,14 @@ Please be friendly! The following things are not acceptable:
 
 === Modules
 
-If you're adding dependencies to external modules from hackage, please make sure the version on the `unstable`-channel of the `nixpkgs` is new enough for your changes to compile.
+If you're adding dependencies to external modules from hackage, please make sure
+the version on the `unstable`-channel of the `nixpkgs` is new enough for your
+changes to compile.
 
 If that is not the case, you'll have to add a custom nix-expression.
 
-To do that, first generate the expression using the `cabal2nix`-tool and place it in the `nix/` folder of the repository.
+To do that, first generate the expression using the `cabal2nix`-tool and place
+it in the `nix/` folder of the repository.
 [source,bash]
 ----
 # Other possible sources for the expression can be listed by running: cabal2nix --help
@@ -97,4 +115,5 @@ in # ...
 ** … the information how to reproduce
 ** … the error message
 * If you plan to resolve the issue, assign yourself to it.
-* You should use commits to automatically close issues (i. e. `Closes #<Issue Number>`)
+* You should use commits to automatically close issues (i. e. `Closes #<Issue
+  * Number>`)
