@@ -43,6 +43,7 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as B (putStrLn)
 import Data.Text (Text, toLower)
 import qualified Data.Text.IO as T (putStrLn)
+import qualified Data.Text as T (unlines)
 import Data.Text.Encoding (encodeUtf8)
 import Data.Word (Word16)
 import Data.Monoid
@@ -58,6 +59,11 @@ data Stuff = MkStuff { _chan :: Channel Packet Packet
                      , _ourKey :: RSAKeyPair }
 
 makeLenses ''Stuff
+
+introductionMessage = T.unlines
+  [ "Hello!"
+  , "This is a simple ricochet bot. Whenever you send it some text, it will"
+  , "reply with the same text reversed. Have fun!" ]
 
 main = do
   key <- generate1024BitRSA
@@ -84,6 +90,8 @@ channelResult = endlessTr (selectChannel 0 . pPacketData . msg . channel_result 
   case val ^. channel_identifier of
     2 -> do
       liftIO $ putStrLn "Channel 2 opened!"
+      wr 2 $ d & chat_message .~ Just
+                 (d & message_text .~ introductionMessage)
       cc <- view chatChan
       liftIO $ putMVar cc ()
     _ -> return ()
@@ -142,6 +150,9 @@ contactRequest o = do
                     & opened .~ True
                     & common_error .~ Nothing
                     & channel_identifier .~ (o ^. channel_identifier))
+      wr 0 $ d & open_channel .~ Just
+                 (d & channel_identifier .~ 2
+                    & channel_type .~ MkChannelType "im.ricochet.chat")
 
 chat :: OpenChannel -> ReaderT Stuff IO a
 chat o = do
@@ -149,9 +160,6 @@ chat o = do
              (d & opened .~ True
                 & common_error .~ Nothing
                 & channel_identifier .~ (o ^. channel_identifier))
-  wr 0 $ d & open_channel .~ Just
-             (d & channel_identifier .~ 2
-                & channel_type .~ MkChannelType "im.ricochet.chat")
   view chatChan >>= liftIO . takeMVar
   endlessTr (selectChannel (o ^. channel_identifier) . pPacketData . msg .
     chat_message . _Just) $ \val -> do
