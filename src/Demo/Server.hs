@@ -42,8 +42,8 @@ import Data.Base32String.Default (toText)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as B (putStrLn)
 import Data.Text (Text, toLower)
-import qualified Data.Text.IO as T (putStrLn)
-import qualified Data.Text as T (unlines)
+import qualified Data.Text.IO as T (putStr, putStrLn)
+import qualified Data.Text as T (lines, unlines)
 import Data.Text.Encoding (encodeUtf8)
 import Data.Word (Word16)
 import Data.Monoid
@@ -165,7 +165,7 @@ chat o = do
     chat_message . _Just) $ \val -> do
       wr (o ^. channel_identifier) $ d & chat_acknowledge .~ Just
                                          (d & message_id .~ val ^. message_id)
-      liftIO . T.putStrLn $ "Received chat message: " <> val ^. message_text
+      liftIO . T.putStr . T.unlines . map ("Received chat message: " <>) . T.lines $ val ^. message_text
       wr 2 $ d & chat_message .~ Just
                  (d & message_text .~ (val ^. message_text . reversed))
 
