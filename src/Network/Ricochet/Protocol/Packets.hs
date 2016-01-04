@@ -25,8 +25,8 @@ import           Network.Ricochet.Types     (Connection(..), Direction(..),
                                              Packet (..), ParserResult (..),
                                              _Success, cInputBuffer, makePacket,
                                              pChannelID, pDirection)
-import           Network.Ricochet.Channel   (Channel, newChannel, readChannel,
-                                             writeChannel)
+import           Network.Ricochet.Channel   (Channel, dupChannel, newChannel,
+                                             readChannel, writeChannel)
 import           Network.Ricochet.Util      (anyWord16, lookWith, parserResult)
 
 import           Control.Concurrent         (forkIO, threadDelay)
@@ -96,7 +96,8 @@ newPacketChannel :: Connection -> IO (Channel Packet Packet)
 newPacketChannel c@(MkConnection h b _) = do
   chan <- newChannel
   forkIO . void $ runStateT (forever $ nextPacket >>= liftIO . writeChannel chan) c
-  forkIO . forever $ readChannel chan >>= sendPacket h
+  chanReadDuplicate <- dupChannel chan
+  forkIO . forever $ readChannel chanReadDuplicate >>= sendPacket h
   return chan
 
 -- | Checks if a complete packet is available on the given connection, and if
@@ -121,17 +122,15 @@ nextPacket :: StateT Connection IO Packet
 nextPacket = do
   maybePacket <- peekPacket
   case maybePacket of
-    Just pkt -> do
-      liftIO $ print pkt
-      return pkt
+    Just pkt -> return pkt
     Nothing -> liftIO (threadDelay delay) >> nextPacket
-  where delay = round $ 10 ** 6
+  where delay = round $ 10 ** 4
 
 -- | Sends a Packet on the given Handle, unless it is 'Received'.
 sendPacket :: Handle -> Packet -> IO ()
 sendPacket handle pkt = case pkt ^. pDirection of
   Sent -> B.hPutStr handle $ dumpPacket pkt
-  Received -> return ()
+  Received -> print pkt
 
 selectChannel :: Word16 -> Prism' Packet Packet
 selectChannel n = filtered ((== n) . (^. pChannelID))

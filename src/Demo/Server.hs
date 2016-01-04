@@ -64,7 +64,7 @@ main = do
   let encodedKey = base64 . privateDER # key
   void . withSession 9051 $ \ctrlSock -> do
     address <- encodeUtf8 . toLower . toText <$> mapOnion ctrlSock 9878 5000 False (Just encodedKey)
-    B.putStrLn $ "Our hidden domain address is: " <> address
+    B.putStrLn $ "Our ricochet ID is: ricochet:" <> address
     connection <- waitForConnection (PortNumber 5000)
     flip runStateT connection $ do
       v <- pickVersion [1]
@@ -80,8 +80,7 @@ main = do
           liftIO $ putStrLn "we should never get here"
 
 channelResult :: ReaderT Stuff IO a
-channelResult = forever $ do
-  val <- tr $ selectChannel 0 . pPacketData . msg . channel_result . _Just
+channelResult = endlessTr (selectChannel 0 . pPacketData . msg . channel_result . _Just) $ \val ->
   case val ^. channel_identifier of
     2 -> do
       liftIO $ putStrLn "Channel 2 opened!"
@@ -154,13 +153,13 @@ chat o = do
              (d & channel_identifier .~ 2
                 & channel_type .~ MkChannelType "im.ricochet.chat")
   view chatChan >>= liftIO . takeMVar
-  forever $ do
-    val <- tr $ selectChannel (o ^. channel_identifier) . pPacketData . msg . chat_message . _Just
-    wr (o ^. channel_identifier) $ d & chat_acknowledge .~ Just
-                                       (d & message_id .~ val ^. message_id)
-    liftIO . T.putStrLn $ "Received chat message: " <> val ^. message_text
-    wr 2 $ d & chat_message .~ Just
-               (d & message_text .~ (val ^. message_text . reversed))
+  endlessTr (selectChannel (o ^. channel_identifier) . pPacketData . msg .
+    chat_message . _Just) $ \val -> do
+      wr (o ^. channel_identifier) $ d & chat_acknowledge .~ Just
+                                         (d & message_id .~ val ^. message_id)
+      liftIO . T.putStrLn $ "Received chat message: " <> val ^. message_text
+      wr 2 $ d & chat_message .~ Just
+                 (d & message_text .~ (val ^. message_text . reversed))
 
 waitForConnection :: PortID -> IO Connection
 waitForConnection port = do
@@ -168,6 +167,10 @@ waitForConnection port = do
   (handle, hostname, portNumber) <- accept socket
   putStrLn $ "Client connected: " <> hostname <> ", port " <> show portNumber
   return $ MkConnection handle "" Server
+
+endlessTr :: ATraversal' Packet a -> (a -> ReaderT Stuff IO b) -> ReaderT Stuff IO c
+endlessTr t m = view chan >>= liftIO . dupChannel >>= \c ->
+  forever ((liftIO . readChannel . transformRO t) c >>= m)
 
 tr :: ATraversal' Packet a -> ReaderT Stuff IO a
 tr p = view chan >>= liftIO . dupChannel >>= liftIO . readChannel . transformRO p
