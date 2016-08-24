@@ -70,13 +70,7 @@ These are the two communication channels we use:
 * IRC (`#ricochet` on freenode) for pretty much everything else (ranging from
   technical to more general to off-topic discussion)
 
-Please be friendly! The following things are not acceptable:
-
-* Sexualized language
-* Personal attacks
-* Harassment
-* Racism, sexism or other forms of discrimination
-* Publishing of anyone's private information without their permission
+Be excellent to each other!
 
 === Modules
 
