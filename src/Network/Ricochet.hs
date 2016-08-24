@@ -53,21 +53,10 @@ startRicochet config contacts action = do
       address <- encodeUtf8 . toLower . toText <$> mapOnion ctrlSock listenInt listenInt False key
       startRicochet' listenSock address contacts (rcSocksPort config) (rcHandlers config) action
 
---startRicochet (Service s) key ctrlPort contacts socksPort versions action = do
---  portNum <- getServicePortNumber s
---  startRicochet (PortNumber portNum) key ctrlPort contacts socksPort versions action
----- Convert the ctrlPort to a PortNumber, if it's a service
---startRicochet lPort key (Service s) contacts socksPort versions action = do
---  portNum <- getServicePortNumber s
---  startRicochet lPort key (PortNumber portNum) contacts socksPort versions action
---startRicochet lPort@(PortNumber listenPort) key (PortNumber ctrlPort) contacts socksPort versions action = do
---  let listenInt = fromIntegral listenPort
---      ctrlInt   = fromIntegral ctrlPort
---  listenSock <- listenOn lPort
---  void . withSession ctrlInt $ \ctrlSock -> do
---    address <- encodeUtf8 . toLower . toText <$> mapOnion ctrlSock listenInt listenInt False key
---    startRicochet' listenSock address contacts socksPort versions action
-
+-- | Converts an Service to a PortNumber,
+--   throws an error on UnixSocket,
+--   keeps PortNumbers.
+--   (Used in startRicochet)
 ensureIsPortNumberNotUnix :: PortID -> IO PortNumber
 ensureIsPortNumberNotUnix (Service s) = do
   portNum <- getServicePortNumber s
