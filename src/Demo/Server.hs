@@ -15,8 +15,11 @@ import qualified Data.Map                    as M
 import           Data.Monoid                 ((<>))
 import           Network                     hiding (accept, connectTo)
 
+
+config = RicochetConfig (PortNumber 9878) Nothing (PortNumber 9051) (PortNumber 9050) [(1, handler)]
+
 main =
-  startRicochet (PortNumber 9878) Nothing (PortNumber 9051) [] (PortNumber 9050) [(1, handler)] $ do
+  startRicochet config [] $ do
     addr <- use hiddenDomain
     liftIO . print $ addr
     void awaitConnection

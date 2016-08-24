@@ -16,10 +16,12 @@ import qualified Data.Map                    as M
 import           Network                     hiding (accept, connectTo)
 import           System.Environment          (getArgs)
 
+config = RicochetConfig (PortNumber 9879) Nothing (PortNumber 9051) (PortNumber 9050) [(1, handler)]
+
 main = do
   args <- getArgs
   when (length args /= 1) $ error "Usage: client <onion address>"
-  startRicochet (PortNumber 9879) Nothing (PortNumber 9051) [] (PortNumber 9050) [(1, handler)] $ do
+  startRicochet config [] $ do
     addr <- use hiddenDomain
     liftIO . print $ addr
     con <- connectTo (head args) (PortNumber 9878)
