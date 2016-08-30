@@ -28,9 +28,10 @@ import           Network.Ricochet.Crypto.RSA
 
 import           Control.Lens               (Prism', Review, (^?), (#), _Right,
                                              prism', to, unto)
+import qualified Data.Base32String.Default  as S32 (fromBytes, toText)
+import qualified Data.Text.Encoding         as T (encodeUtf8)
 import           Data.ByteString            (ByteString)
 import qualified Data.ByteString            as B (take)
-import qualified Data.ByteString.Base32     as B32 (encode)
 import           Data.ByteString.Base64     as B64 (encode, decode)
 import qualified Data.ByteString.Char8      as B8 (map)
 import           Data.Char                  (toLower)
@@ -102,4 +103,5 @@ public = unto $ unsafePerformIO . rsaCopyPublic
 
 -- | Compute the Tor domain name of some RSA key
 torDomain :: RSAKey k => k -> ByteString
-torDomain k = B8.map toLower . B32.encode . B.take 10 . hashSHA1 $ publicDER . public # k
+torDomain k = B8.map toLower . T.encodeUtf8 . S32.toText . S32.fromBytes .
+  B.take 10 . hashSHA1 $ publicDER . public # k
