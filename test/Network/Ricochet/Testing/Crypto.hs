@@ -49,9 +49,14 @@ torDomainAssertion :: Assertion
 torDomainAssertion = do
   key <- generate1024BitRSA
   mVar <- newEmptyMVar
-  let pubKey = base64 . privateDER # key
-  startRicochet (PortNumber 9879) (Just pubKey) (PortNumber 9051) []
-                (PortNumber 9050) []
-                (use hiddenDomain >>= liftIO . putMVar mVar)
+  let privKey = base64 . privateDER # key
+      config = RicochetConfig
+             { rcPort        = PortNumber 9879
+             , rcPrivKey     = Just privKey
+             , rcControlPort = PortNumber 9051
+             , rcSocksPort   = PortNumber 9050
+             , rcHandlers    = []
+             }
+  startRicochet config [] (use hiddenDomain >>= liftIO . putMVar mVar)
   domain <- readMVar mVar
   assertEqual "" domain $ torDomain key
