@@ -1,5 +1,6 @@
 # nix
 result/
+haskell-ricochet.nix
 # haskell
 dist/
 cabal-dev

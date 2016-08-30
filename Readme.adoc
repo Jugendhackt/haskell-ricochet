@@ -22,11 +22,12 @@ Don't use this project unless you are developing on it. It is probably neither s
 
 == Building and Documentation
 
-We recommend using nix:
+We tested everything using the following nix-workflow but you should also get it to work using stack or cabal.
 
 [source,shell]
 ----
-nix-shell shell.nix # for dependencies
+cabal2nix . > haskell-ricochet.nix
+nix-shell     # for dependencies
 cabal configure
 cabal build
 cabal haddock # documentation
