@@ -43,8 +43,8 @@ library
                      , Network.Ricochet.Protocol.Data.Control.KeepAlive
                      , Network.Ricochet.Protocol.Data.Control.OpenChannel
                      , Network.Ricochet.Protocol.Data.Control.Packet
+
   build-depends:       base
-                     , base32-bytestring
                      , base32string
                      , base64-bytestring
                      , network
@@ -67,7 +67,6 @@ library
 executable server
   main-is:             src/Demo/Server.hs
   build-depends:       base
-                     , base32string
                      , mtl
                      , containers
                      , bytestring
@@ -79,7 +78,6 @@ executable server
 executable client
   main-is:             src/Demo/Client.hs
   build-depends:       base
-                     , base32string
                      , mtl
                      , containers
                      , bytestring
