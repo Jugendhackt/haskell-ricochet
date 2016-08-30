@@ -14,11 +14,11 @@ import qualified Test.Tasty.HUnit as HU
 
 import Network.Ricochet.Testing.Instances
 import Network.Ricochet.Testing.Crypto
-import Network.Ricochet.Testing.General
+--import Network.Ricochet.Testing.General
 
 main = defaultMain tests
 
-tests = testGroup "Network.Ricochet.Testing" [ cryptoTests, generalTests ]
+tests = testGroup "Network.Ricochet.Testing" [ cryptoTests ]
 
 cryptoTests = testGroup "Network.Ricochet.Testing.Crypto" [
     QC.testProperty "base64check: en- and decoding works" base64Check
@@ -30,7 +30,4 @@ cryptoTests = testGroup "Network.Ricochet.Testing.Crypto" [
   ]
 
 generalTests = testGroup "Network.Ricochet.Testing.General" [
-    HU.testCase
-      "connectionAssertion: connections can be established and version negotiation works"
-      connectionAssertion
   ]
