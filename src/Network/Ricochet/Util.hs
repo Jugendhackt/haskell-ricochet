@@ -16,16 +16,14 @@ module Network.Ricochet.Util
   , lookWith
   ) where
 
-import           Network.Ricochet.Types           (ParserResult(..))
+import Network.Ricochet.Types (ParserResult(..))
 
-import           Control.Lens                     (Traversal', (^?), filtered,
-                                                   traversed)
-import           Control.Monad                    (liftM2)
-import           Data.Attoparsec.ByteString       (Parser, Result(..),
-                                                   IResult(..), anyWord8)
-import           Data.Bits                        (shiftL)
-import           Data.ByteString                  (ByteString ())
-import           GHC.Word                         (Word8, Word16)
+import Control.Lens(Traversal', (^?), filtered, traversed)
+import Control.Monad (liftM2)
+import Data.Attoparsec.ByteString       (Parser, Result(..), IResult(..), anyWord8)
+import Data.Bits (shiftL)
+import Data.ByteString (ByteString ())
+import Data.Word (Word8, Word16)
 
 -- | Joins two Word8s into a single Word16
 joinWord8s :: Word8 -> Word8 -> Word16

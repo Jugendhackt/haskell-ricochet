@@ -10,19 +10,19 @@ import Network.Ricochet.Types
 import Network.Ricochet.Util
 import Network.Ricochet.Version
 
-import           Data.Map                         (fromList)
-import           Data.Base32String.Default        (toText)
-import           Data.ByteString                  (ByteString)
-import           Data.Text                        (toLower)
-import           Data.Text.Encoding               (encodeUtf8)
-import           Data.Word                        (Word8)
-import           Network                          (PortID(..), Socket, listenOn)
-import           Control.Lens
-import           Control.Monad                    (void, forever)
-import           Control.Monad.IO.Class           (liftIO)
-import           Control.Monad.State              (evalStateT)
-import           Network.BSD                      (getServicePortNumber, PortNumber (..))
-import           Network.Anonymous.Tor            (mapOnion, withSession)
+import Data.Map (fromList)
+import Data.Base32String.Default (toText)
+import Data.ByteString (ByteString)
+import Data.Text (toLower)
+import Data.Text.Encoding (encodeUtf8)
+import Data.Word (Word8)
+import Control.Lens
+import Control.Monad (void, forever)
+import Control.Monad.IO.Class (liftIO)
+import Control.Monad.State (evalStateT)
+import Network (PortID(..), Socket, listenOn)
+import Network.BSD (getServicePortNumber, PortNumber (..))
+import Network.Anonymous.Tor (mapOnion, withSession)
 
 
 data RicochetConfig = RicochetConfig

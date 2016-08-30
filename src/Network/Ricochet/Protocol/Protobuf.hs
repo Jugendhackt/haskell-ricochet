@@ -15,19 +15,17 @@ module Network.Ricochet.Protocol.Protobuf
   , d
   ) where
 
-import           Control.Lens             (Iso', Prism', Traversal', (^?), _1,
-                                           _Just, _Right, iso, lazy, lens,
-                                           prism', strict, to)
-import           Control.Monad            (MonadPlus, mzero)
-import           Data.ByteString          (ByteString)
-import           Data.Text                (Text)
-import           Data.Text.Encoding       (decodeUtf8', encodeUtf8)
-import           Text.ProtocolBuffers     (Default, ExtKey, Key,
-                                           ReflectDescriptor, Utf8(..), Wire,
-                                           defaultValue, utf8, getExt,
-                                           messageGet, messagePut, putExt)
-import           GHC.Word                 (Word16)
-import           GHC.Int                  (Int32)
+import Control.Lens (Iso', Prism', Traversal', (^?), _1, _Just, _Right, iso,
+                     lazy, lens, prism', strict, to)
+import Control.Monad MonadPlus, mzero)
+import Data.ByteString (ByteString)
+import Data.Text (Text)
+import Data.Text.Encoding (decodeUtf8', encodeUtf8)
+import Data.Word (Word16)
+import Data.Int (Int32)
+import Text.ProtocolBuffers (Default, ExtKey, Key, ReflectDescriptor, Utf8(..),
+                             Wire, defaultValue, utf8, getExt, messageGet,
+                             messagePut, putExt)
 
 -- | Take an extension key and return a Traversal' that yields all the values to
 --   that extension key

@@ -20,28 +20,26 @@ module Network.Ricochet.Monad
   , sendByteString, closeConnection
   ) where
 
-import           Network.Ricochet.Protocol.Lowest
-import           Network.Ricochet.Types
-import           Network.Ricochet.Util
+import Network.Ricochet.Protocol.Lowest
+import Network.Ricochet.Types
+import Network.Ricochet.Util
 
-import           Control.Applicative              (Applicative (..))
-import           Control.Concurrent               (threadDelay)
-import           Control.Lens                     ((<%=), (%=), (^.),
-                                                   makeLenses, use)
-import           Control.Monad.IO.Class           (MonadIO (..))
-import           Control.Monad.State              (MonadState (..), StateT (..))
-import           Data.ByteString                  (ByteString ())
-import qualified Data.ByteString                  as B
-import           Data.List                        (delete)
-import           Data.Map                         (Map (), lookup, empty)
-import           Data.Monoid                      ((<>))
-import           Data.Word                        (Word8, Word16)
-import           Network                          (PortID (..))
-import           Network.Socket                   (Socket ())
-import           System.IO                        (BufferMode (..), Handle (),
-                                                   hSetBuffering, hClose)
+import Control.Applicative (Applicative (..))
+import Control.Concurrent (threadDelay)
+import Control.Lens ((<%=), (%=), (^.), makeLenses, use)
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.State (MonadState (..), StateT (..))
+import Data.ByteString (ByteString ())
+import qualified Data.ByteString as B
+import Data.List (delete)
+import Data.Map (Map (), lookup, empty)
+import Data.Monoid ((<>))
+import Data.Word (Word8, Word16)
+import Network (PortID (..))
+import Network.Socket (Socket ())
+import System.IO     (BufferMode (..), Handle (), hSetBuffering, hClose)
 
--- | The Ricochet Monad which allows all stateful network computations we need to do
+-- | The Ricochet Monad which allows stateful network computations
 newtype Ricochet a = Ricochet { runRicochet :: StateT RicochetState IO a }
   deriving ( Functor, Applicative, Monad
            , MonadIO, MonadState RicochetState)

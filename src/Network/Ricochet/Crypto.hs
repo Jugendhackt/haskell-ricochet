@@ -24,27 +24,25 @@ module Network.Ricochet.Crypto
   )
 where
 
-import           Network.Ricochet.Crypto.RSA
+import Network.Ricochet.Crypto.RSA
 
-import           Control.Lens               (Prism', Review, (^?), (#), _Right,
-                                             prism', to, unto)
-import qualified Data.Base32String.Default  as S32 (fromBytes, toText)
-import qualified Data.Text.Encoding         as T (encodeUtf8)
-import           Data.ByteString            (ByteString)
-import qualified Data.ByteString            as B (take)
-import           Data.ByteString.Base64     as B64 (encode, decode)
-import qualified Data.ByteString.Char8      as B8 (map)
-import           Data.Char                  (toLower)
-import           Data.Maybe                 (fromJust)
-import           OpenSSL                    (withOpenSSL)
-import           OpenSSL.EVP.Digest         (Digest, getDigestByName, hmacBS,
-                                             digestBS)
-import           OpenSSL.EVP.PKey           (KeyPair, PublicKey)
-import           OpenSSL.EVP.Sign           (signBS)
-import           OpenSSL.EVP.Verify         (VerifyStatus(..), verifyBS)
-import           OpenSSL.RSA                (RSAKey, RSAKeyPair, RSAPubKey,
-                                             generateRSAKey', rsaCopyPublic)
-import           System.IO.Unsafe           (unsafePerformIO)
+import Control.Lens (Prism', Review, (^?), (#), _Right, prism', to, unto)
+import qualified Data.Base32String.Default as S32 (fromBytes, toText)
+import Data.ByteString (ByteString)
+import qualified Data.ByteString as B (take)
+import Data.ByteString.Base64 as B64 (encode, decode)
+import qualified Data.ByteString.Char8 as B8 (map)
+import qualified Data.Text.Encoding as T (encodeUtf8)
+import Data.Char (toLower)
+import Data.Maybe (fromJust)
+import OpenSSL (withOpenSSL)
+import OpenSSL.EVP.Digest (Digest, getDigestByName, hmacBS, digestBS)
+import OpenSSL.EVP.PKey (KeyPair, PublicKey)
+import OpenSSL.EVP.Sign (signBS)
+import OpenSSL.EVP.Verify (VerifyStatus(..), verifyBS)
+import OpenSSL.RSA (RSAKey, RSAKeyPair, RSAPubKey,  generateRSAKey',
+                    rsaCopyPublic)
+import System.IO.Unsafe (unsafePerformIO)
 
 -- | Generate a 1024 bit private RSA key.  The public exponent is 3.
 generate1024BitRSA :: IO RSAKeyPair

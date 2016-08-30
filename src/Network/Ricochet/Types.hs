@@ -10,16 +10,16 @@ lenses used throughout the package.
 {-# LANGUAGE TemplateHaskell            #-}
 module Network.Ricochet.Types where
 
-import           Control.Lens                     (makeLenses, makePrisms)
-import           Data.Map                         (Map ())
-import           Data.Text                        (Text)
-import           Control.Monad.IO.Class           (MonadIO (..))
-import           Control.Monad.State              (MonadState (..), StateT (..))
-import           Data.ByteString                  (ByteString ())
-import qualified Data.ByteString as B             (empty, length)
-import           Data.Word                        (Word16)
-import           Network.Socket                   (Socket ())
-import           System.IO                        (Handle ())
+import Control.Lens (makeLenses, makePrisms)
+import Data.Map (Map ())
+import Data.Text (Text)
+import Control.Monad.IO.Class (MonadIO (..))
+import Control.Monad.State (MonadState (..), StateT (..))
+import Data.ByteString (ByteString ())
+import qualified Data.ByteString as B (empty, length)
+import Data.Word (Word16)
+import Network.Socket (Socket ())
+import System.IO (Handle ())
 
 -- | Low level representation of a ricochet packet
 data Packet = MkPacket

@@ -14,22 +14,20 @@ module Network.Ricochet.Protocol.Lowest
   , packet
   ) where
 
-import           Prelude                    hiding (take)
+import Network.Ricochet.Util (anyWord16, parserResult)
+import Network.Ricochet.Types (Packet (..), ParserResult (..), makePacket,
+                                _Success)
 
-import           Network.Ricochet.Types     (Packet (..), ParserResult (..),
-                                             makePacket, _Success)
-import           Network.Ricochet.Util      (anyWord16, parserResult)
-
-import           Control.Lens               (Prism', (^?), _1, prism')
-import           Data.Attoparsec.ByteString (Parser, parse, take)
-import           Data.Bifunctor             (first)
-import           Data.ByteString            (ByteString ())
-import qualified Data.ByteString            as B
-import           Data.ByteString.Builder    (byteString, toLazyByteString,
-                                             word16BE)
-import           Data.ByteString.Lazy       (toStrict)
-import           Data.Monoid                ((<>))
-import           Data.Word                  (Word16, Word8)
+import Prelude hiding (take)
+import Control.Lens (Prism', (^?), _1, prism')
+import Data.Attoparsec.ByteString (Parser, parse, take)
+import Data.Bifunctor (first)
+import Data.ByteString (ByteString ())
+import qualified Data.ByteString as B
+import Data.ByteString.Builder (byteString, toLazyByteString, word16BE)
+import Data.ByteString.Lazy (toStrict)
+import Data.Monoid ((<>))
+import Data.Word (Word16, Word8)
 
 
 -- | Actually parses a packet.
@@ -46,7 +44,8 @@ packetParser = do
 
 -- | Serializes a Packet to yield it’s low-level representation
 dumpPacket :: Packet -> ByteString
-dumpPacket (MkPacket w1 w2 bs) = toStrict . toLazyByteString $ word16BE w1 <> word16BE w2 <> byteString bs
+dumpPacket (MkPacket w1 w2 bs) = toStrict . toLazyByteString $ word16BE w1
+                                   <> word16BE w2 <> byteString bs
 
 -- | Prism for parsing and dumping a packet
 packet :: Prism' ByteString Packet

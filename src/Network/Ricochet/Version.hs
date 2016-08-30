@@ -17,23 +17,21 @@ module Network.Ricochet.Version
   , dumpIntroduction
   ) where
 
-import           Prelude                    hiding (lookup)
 
-import           Network.Ricochet.Util      (parserResult)
-import           Network.Ricochet.Monad     (Ricochet)
-import           Network.Ricochet.Types     (Connection, ParserResult)
+import Network.Ricochet.Util      (parserResult)
+import Network.Ricochet.Monad     (Ricochet)
+import Network.Ricochet.Types     (Connection, ParserResult)
 
-import           Control.Applicative        ((<|>))
-import           Data.Attoparsec.ByteString (Parser, anyWord8, count, parse,
-                                             string)
-import           Data.ByteString            (ByteString ())
-import qualified Data.ByteString            as B
-import           Data.List                  (elem)
-import           Data.Map                   (Map (), filterWithKey, keys,
-                                             lookup, size)
-import           Data.Maybe                 (fromJust)
-import           Data.Monoid                ((<>))
-import           GHC.Word                   (Word8 ())
+import Prelude hiding (lookup)
+import Control.Applicative ((<|>))
+import Data.Attoparsec.ByteString (Parser, anyWord8, count, parse, string)
+import Data.ByteString (ByteString ())
+import qualified Data.ByteString as B
+import Data.List (elem)
+import Data.Map (Map (), filterWithKey, keys, lookup, size)
+import Data.Maybe (fromJust)
+import Data.Monoid ((<>))
+import Data.Word (Word8 ())
 
 -- | A Version is a Word8 as defined by the ricochet protocol
 type Version = Word8
@@ -61,5 +59,6 @@ introductionParser supportedVersions = do
 -- | Dumps the introduction message
 dumpIntroduction :: Versions -> ByteString
 dumpIntroduction supportedVersions = "IM" <> versionCount <> versions
-  where versionCount = B.singleton (fromIntegral . size $ supportedVersions :: Word8) 
-        versions     = foldl (\s c -> s <> B.singleton c) "" (keys supportedVersions)
+  where versionCount = B.singleton (fromIntegral . size $ supportedVersions)
+        versions     = foldl (\s c -> s <> B.singleton c) ""
+                         (keys supportedVersions)

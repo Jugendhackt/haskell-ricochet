@@ -21,21 +21,20 @@ module Network.Ricochet.Crypto.RSA
 #include <openssl/rsa.h>
 #include <openssl/x509.h>
 
-import           Data.ByteString            (ByteString)
-import qualified Data.ByteString            as B  (useAsCStringLen)
-import qualified Data.ByteString.Internal   as BI (createAndTrim)
-import           Foreign.ForeignPtr         (ForeignPtr, finalizeForeignPtr,
-                                             newForeignPtr, withForeignPtr)
-import           Foreign.Ptr                (FunPtr, Ptr, freeHaskellFunPtr,
-                                             nullFunPtr, nullPtr)
-import           Foreign.C.String           (CString)
-import           Foreign.C.Types            (CLong(..), CInt(..), CUInt(..))
-import           Foreign.Marshal.Alloc      (alloca)
-import           Foreign.Storable           (peek, poke)
-import           GHC.Word                   (Word8)
-import           OpenSSL.RSA                (RSA, RSAKey, RSAKeyPair, RSAPubKey,
-                                             absorbRSAPtr, rsaSize, withRSAPtr)
-import           System.IO.Unsafe           (unsafePerformIO)
+import Data.ByteString (ByteString)
+import qualified Data.ByteString as B  (useAsCStringLen)
+import qualified Data.ByteString.Internal as BI (createAndTrim)
+import Foreign.ForeignPtr (ForeignPtr, finalizeForeignPtr, newForeignPtr,
+                           withForeignPtr)
+import Foreign.Ptr (FunPtr, Ptr, freeHaskellFunPtr, nullFunPtr, nullPtr)
+import Foreign.C.String (CString)
+import Foreign.C.Types (CLong(..), CInt(..), CUInt(..))
+import Foreign.Marshal.Alloc (alloca)
+import Foreign.Storable (peek, poke)
+import Data.Word (Word8)
+import OpenSSL.RSA (RSA, RSAKey, RSAKeyPair, RSAPubKey, absorbRSAPtr, rsaSize,
+                    withRSAPtr)
+import System.IO.Unsafe (unsafePerformIO)
 
 type CDecodeFun = Ptr (Ptr RSA) -> Ptr CString -> CLong -> IO (Ptr RSA)
 type CEncodeFun = Ptr RSA -> Ptr (Ptr Word8) -> IO CInt
