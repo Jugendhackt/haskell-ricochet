@@ -17,7 +17,7 @@ module Network.Ricochet.Protocol.Protobuf
 
 import Control.Lens (Iso', Prism', Traversal', (^?), _1, _Just, _Right, iso,
                      lazy, lens, prism', strict, to)
-import Control.Monad MonadPlus, mzero)
+import Control.Monad (MonadPlus, mzero)
 import Data.ByteString (ByteString)
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8', encodeUtf8)
