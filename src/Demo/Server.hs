@@ -16,7 +16,7 @@ import           Data.Monoid                 ((<>))
 import           Network                     hiding (accept, connectTo)
 
 
-config = RicochetConfig (PortNumber 9878) Nothing (PortNumber 9051) (PortNumber 9050) [(1, handler)]
+config = RicochetConfig 9878 Nothing 9051 9050 [(1, handler)]
 
 main =
   startRicochet config [] $ do

@@ -18,6 +18,7 @@ module Network.Ricochet.Monad
   , nextPacket, socksPort
   , versions, sendPacket
   , sendByteString, closeConnection
+  , startRicochet, RicochetConfig (..)
   ) where
 
 import Network.Ricochet.Protocol.Lowest
@@ -27,17 +28,25 @@ import Network.Ricochet.Util
 import Control.Applicative (Applicative (..))
 import Control.Concurrent (threadDelay)
 import Control.Lens ((<%=), (%=), (^.), makeLenses, use)
-import Control.Monad.IO.Class (MonadIO (..))
-import Control.Monad.State (MonadState (..), StateT (..))
+import Control.Monad (void, forever)
+import Control.Monad.IO.Class (MonadIO (..), liftIO)
+import Control.Monad.State (MonadState (..), StateT (..), evalStateT)
+import Data.Base32String.Default (toText)
 import Data.ByteString (ByteString ())
 import qualified Data.ByteString as B
 import Data.List (delete)
-import Data.Map (Map (), lookup, empty)
+import Data.Map (Map (), lookup, empty, fromList)
 import Data.Monoid ((<>))
+import Data.Text (toLower)
+import Data.Text.Encoding (encodeUtf8)
 import Data.Word (Word8, Word16)
-import Network (PortID (..))
-import Network.Socket (Socket ())
-import System.IO     (BufferMode (..), Handle (), hSetBuffering, hClose)
+import Network.Socket (Socket (), PortNumber (..), socket, bind,
+                       tupleToHostAddress, SocketType (..), defaultProtocol,
+                       SockAddr (..), Family (..))
+import Network.BSD (getServicePortNumber)
+import Network.Anonymous.Tor (mapOnion, withSession)
+import System.IO (BufferMode (..), Handle (), hSetBuffering, hClose)
+
 
 -- | The Ricochet Monad which allows stateful network computations
 newtype Ricochet a = Ricochet { runRicochet :: StateT RicochetState IO a }
@@ -50,7 +59,7 @@ data RicochetState = MkRicochetState
   , _hiddenDomain :: ByteString                            -- ^ The domain of our hidden service
   , _connections  :: [Connection]                          -- ^ A list of the current open connections
   , _contactList  :: [Contact]                             -- ^ A list of known contacts
-  , _socksPort    :: PortID                                -- ^ The port of the local Tor SOCKS proxy
+  , _socksPort    :: PortNumber                            -- ^ The port of the local Tor SOCKS proxy
   , _versions     :: Map Word8 (Connection -> Ricochet ()) -- ^ A map mapping version numbers to handlers
   }
 
@@ -101,3 +110,52 @@ closeConnection :: Connection -> Ricochet ()
 closeConnection connection = do
   connections %= delete connection
   liftIO . hClose $ connection ^. cHandle
+
+data RicochetConfig = RicochetConfig
+  { rcPort        :: PortNumber       -- ^ Port to listen on
+  , rcPrivKey     :: Maybe ByteString -- ^ RSA1024 private key in base64 encoding
+  , rcControlPort :: PortNumber       -- ^ The Tor control port
+  , rcSocksPort   :: PortNumber       -- ^ The port of the Tor SOCKS5 proxy
+  , rcHandlers    :: [(Word8, Connection -> Ricochet ())] -- ^ A list of version identifiers and their
+                                                          --   corresponding 'Connection' handlers
+  }
+
+-- | Start an action inside the Ricochet monad.
+--
+--   This function uses a Tor control socket to create the hidden service.
+--   If no key is supplied, the hidden service will be random
+startRicochet :: RicochetConfig
+              -> [Contact]        -- ^ A list of known 'Contact's
+              -> Ricochet ()
+              -> IO ()
+startRicochet config contacts action = do
+  let key       = rcPrivKey config
+      listenInt = fromIntegral lPort
+      ctrlInt   = fromIntegral . rcControlPort $ config
+      lPort     = rcPort config
+      cPort     = rcSocksPort config
+
+  listenSock <- socket AF_INET Stream defaultProtocol
+  bind listenSock (SockAddrInet listenInt (tupleToHostAddress (127,0,0,1)))
+  void . withSession ctrlInt $ \ctrlSock -> do
+      address <- encodeUtf8 . toLower . toText <$> mapOnion ctrlSock listenInt listenInt False key
+      startRicochet' listenSock address contacts (rcSocksPort config) (rcHandlers config) action
+
+-- | Start an action inside the Ricochet monad.
+--
+--   This function assumes the listening socket was already configured to be a
+--   hidden service via the torrc or some other method.
+--
+--   DON'T use this function if that's not the case.
+startRicochet' :: Socket      -- ^ Socket to listen on
+              -> ByteString   -- ^ Domain of the already configured hidden service
+              -> [Contact]    -- ^ A list of known contacts
+              -> PortNumber   -- ^ The port of the Tor SOCKS5 proxy
+              -> [(Word8, Connection -> Ricochet ())] -- ^ A list of version identifiers and their
+                                                      --   corresponding 'Connection' handlers
+              -> Ricochet ()  -- ^ The action to execute
+              -> IO ()
+startRicochet' sock address contacts soxPort versions action =
+  let versions' = fromList versions
+      state     = MkRicochetState sock address [] contacts soxPort versions'
+  in flip evalStateT state . runRicochet $ action

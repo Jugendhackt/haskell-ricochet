@@ -46,7 +46,7 @@ connectTo :: String              -- ^ Tor hidden service identifier to connect t
           -> Ricochet Connection -- ^ Returns the established connection
 connectTo domain port = do
   torPort <- use socksPort
-  handle <- liftIO $ socksConnectTo "localhost" torPort domain port
+  handle <- liftIO $ socksConnectTo "localhost" (PortNumber torPort) domain port
   initiateConnection handle Client
 
 -- | Initiate a newly made connection.  This includes the version negotiation

@@ -16,7 +16,7 @@ import qualified Data.Map                    as M
 import           Network                     hiding (accept, connectTo)
 import           System.Environment          (getArgs)
 
-config = RicochetConfig (PortNumber 9879) Nothing (PortNumber 9051) (PortNumber 9050) [(1, handler)]
+config = RicochetConfig 9879 Nothing 9051 9050 [(1, handler)]
 
 main = do
   args <- getArgs
