@@ -27,11 +27,12 @@ We tested everything using the following nix-workflow but you should also get it
 [source,shell]
 ----
 cabal2nix . > haskell-ricochet.nix
-nix-shell     # for dependencies
+nix-shell -A env                       # for dependencies
 cabal configure
 cabal build
-cabal haddock # documentation
-cabal repl    # for playing around
+cabal haddock                          # documentation
+cabal repl                             # for playing around
+cabal test                             # tests (need tor running with control port open)
 ----
 
 == Get in touch!
